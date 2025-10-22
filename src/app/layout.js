@@ -1,14 +1,22 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Ledger, Montserrat } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/header/header";
+import Footer from "@/components/footer/Footer";
+import Preloader from "@/components/ui/preloader";
+import ReduxProvider from "@/components/providers/ReduxProvider";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const ledger = Ledger({
+  variable: "--font-ledger",
   subsets: ["latin"],
+  weight: "400",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata = {
@@ -20,9 +28,27 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${ledger.variable} ${montserrat.variable} antialiased`}
       >
-        {children}
+        <ReduxProvider>
+          <Preloader />
+          <Header></Header>
+          <main className="">
+            {children}
+          </main>
+          <Footer />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </ReduxProvider>
       </body>
     </html>
   );
