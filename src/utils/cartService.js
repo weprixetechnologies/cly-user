@@ -57,14 +57,14 @@ export const calculateCartDetails = (cartItems) => {
         // Placeholder: assume each item costs 100 rupees
         // You should replace this with actual product pricing from your backend
         const itemPrice = 100; // This should come from product data
-        const quantity = (item.boxQty || 0) + (item.packQty || 0) + (item.units || 0);
+        const quantity = (item.boxQty || 0) + (item.units || 0);
         return sum + (itemPrice * quantity);
     }, 0);
 
     const deliveryFee = subtotal >= 499 ? 0 : 50; // Free delivery over 499
     const total = subtotal + deliveryFee;
     const itemCount = cartItems.reduce((count, item) => {
-        return count + (item.boxQty || 0) + (item.packQty || 0) + (item.units || 0);
+        return count + (item.boxQty || 0) + (item.units || 0);
     }, 0);
 
     return {

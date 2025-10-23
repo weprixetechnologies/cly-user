@@ -159,7 +159,7 @@ export default function AccountPage() {
                                             <div className="text-xs px-2 py-1 rounded-full bg-orange-50 text-[#EF6A22] border border-orange-200">{o.orderStatus}</div>
                                         </div>
                                         <div className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleString()}</div>
-                                        <div className="mt-2 text-sm text-gray-700">{o.productName} — Box {o.boxQty}, Pack {o.packQty}, Units {o.units}</div>
+                                        <div className="mt-2 text-sm text-gray-700">{o.productName} — Box {o.boxQty}, Units {o.units}</div>
                                         <a href={`/order-success/order-summary/${o.orderID}`} className="text-xs mt-2 inline-block underline text-[#EF6A22]">View summary</a>
                                     </div>
                                 ))}

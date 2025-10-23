@@ -46,7 +46,7 @@ export default function OrderSummary({ params }) {
     }
 
     const info = data.info;
-    const subtotal = data.items.reduce((s, it) => s + (Number(it.productPrice || 0) * ((it.boxQty || 0) + (it.packQty || 0) + (it.units || 0))), 0);
+    const subtotal = data.items.reduce((s, it) => s + (Number(it.productPrice || 0) * ((it.boxQty || 0) + (it.units || 0))), 0);
     const delivery = subtotal >= 499 ? 0 : 50;
     const total = subtotal + delivery;
 
@@ -72,7 +72,7 @@ export default function OrderSummary({ params }) {
                                 <div className="flex-1 min-w-0">
                                     <div className="font-medium truncate">{it.productName}</div>
                                     <div className="text-sm text-gray-500">SKU: {it.sku || '—'}</div>
-                                    <div className="text-xs text-gray-500 mt-1">Qty: {(it.boxQty || 0) + (it.packQty || 0) + (it.units || 0)}</div>
+                                    <div className="text-xs text-gray-500 mt-1">Qty: {(it.boxQty || 0) + (it.units || 0)}</div>
                                 </div>
                                 <div className="font-semibold">₹ {Number(it.productPrice || 0).toFixed(2)}</div>
                             </div>

@@ -30,13 +30,13 @@ export default function ProductsPage() {
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50">
             {/* Hero */}
             <div className="bg-gradient-to-r from-[#EF6A22] via-[#f59e0b] to-[#f97316] text-white">
-                <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+                <div className="max-w-[90%] mx-auto px-4 md:px-8 py-8">
                     <h1 className="text-2xl md:text-3xl font-semibold">Shop</h1>
                     <p className="text-white/90 text-sm mt-1">Browse our catalogue and find what you need</p>
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-6 pb-10">
+            <div className="max-w-[90%] mx-auto px-4 md:px-8 -mt-6 pb-10">
                 {/* Controls */}
                 <div className="bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm p-4 md:p-6">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">

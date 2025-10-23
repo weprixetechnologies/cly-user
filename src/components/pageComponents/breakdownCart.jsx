@@ -12,7 +12,7 @@ const BreakdownCart = ({ breakdownData, couponDiscount, appliedCoupon, onRemoveC
 
     // Calculate total units from cart items
     const totalUnits = cart.reduce((total, item) => {
-        return total + (item.boxQty || 0) + (item.packQty || 0) + (item.units || 0);
+        return total + (item.boxQty || 0) + (item.units || 0);
     }, 0);
 
     const finalTotal = total - couponDiscount;

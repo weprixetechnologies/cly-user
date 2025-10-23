@@ -109,9 +109,6 @@ const CartItems = ({ cart, onItemRemoved, onCartUpdated }) => {
                                         {i.boxQty > 0 && (
                                             <p className='text-xs px-2 py-1 bg-gray-100 rounded font-medium text-gray-700'>Boxes: {i.boxQty}</p>
                                         )}
-                                        {i.packQty > 0 && (
-                                            <p className='text-xs px-2 py-1 bg-gray-100 rounded font-medium text-gray-700'>Packs: {i.packQty}</p>
-                                        )}
                                         {i.units > 0 && (
                                             <p className='text-xs px-2 py-1 bg-gray-100 rounded font-medium text-gray-700'>Units: {i.units}</p>
                                         )}

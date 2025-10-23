@@ -9,15 +9,21 @@ export default function ProductDetail({ params }) {
     const { productID } = resolvedParams;
     const [product, setProduct] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [minQty, setMinQty] = useState(1);
     const [selectedImage, setSelectedImage] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`http://localhost:3300/api/products/${productID}`);
+                const response = await fetch(`http://72.60.219.181:3300/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
+                console.log(data.data.minQty);
+
+                const productMinQty = data.data?.minQty || 1;
+                setMinQty(productMinQty);
+                setQuantity(productMinQty); // Initialize to minQty
                 const galleryInit = Array.isArray(data?.data?.galleryImages) ? data.data.galleryImages : [];
                 const firstImage = data?.data?.featuredImages || galleryInit[0] || '';
                 setSelectedImage(firstImage);
@@ -30,7 +36,22 @@ export default function ProductDetail({ params }) {
         fetchProduct();
     }, [productID]);
 
+    // Helper functions for quantity management
+    const incrementQuantity = () => {
+        setQuantity(prev => prev + minQty);
+    };
+
+    const decrementQuantity = () => {
+        setQuantity(prev => Math.max(minQty, prev - minQty));
+    };
+
     const addToCart = async () => {
+        // Check if product is in stock
+        if ((product.inventory || 0) <= 0) {
+            alert('This product is currently out of stock.');
+            return;
+        }
+
         const uid = typeof window !== 'undefined' ? localStorage.getItem('uid') : null;
 
         try {
@@ -39,7 +60,6 @@ export default function ProductDetail({ params }) {
                 productName: product.productName,
                 featuredImage: product.featuredImages,
                 boxQty: 0,
-                packQty: 0,
                 units: quantity
             });
             alert('Added to cart');
@@ -110,7 +130,9 @@ export default function ProductDetail({ params }) {
                     )}
 
                     <p className='text-2xl mt-4 mb-2 text-gray-500 font-bold' style={{ fontFamily: 'var(--font-montserrat)' }}>
-                        50 / Piece <span className='text-green-500 text-xs font-normal' style={{ fontFamily: 'var(--font-montserrat)' }}> (Currently In-Stock)</span>
+                        ₹{currentPrice.toFixed(2)} / Piece <span className={`text-xs font-normal ${(product.inventory || 0) > 0 ? 'text-green-500' : 'text-red-500'}`} style={{ fontFamily: 'var(--font-montserrat)' }}>
+                            {(product.inventory || 0) > 0 ? '(Currently In-Stock)' : '(OUT OF STOCK)'}
+                        </span>
                     </p>
 
                     <div className="flex flex-row gap-2 border border-gray-300 rounded-md p-2 mt-3">
@@ -119,23 +141,51 @@ export default function ProductDetail({ params }) {
                             <p>Box Qty : {product.boxQty}</p>
                         </section>
                         <section className='flex-1'>
-                            <p>Pack Qty : {product.packQty}</p>
+                            <p>Unit Qty : {quantity}</p>
                         </section>
                         <section className='flex-1'>
-                            <p>Unit Qty : {quantity}</p>
+                            <p className='text-sm text-gray-600'>Min Qty : {minQty}</p>
                         </section>
                     </div>
                     {/* Quantity selector */}
                     <div className='flex flex-row gap-2 w-full  items-end'>
                         <div style={{ marginTop: 20 }}>
-                            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 8 }}>Quantity</div>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 999, overflow: 'hidden' }}>
-                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{ padding: '10px 16px', background: '#f3f4f6' }}>–</button>
-                                <div style={{ minWidth: 56, textAlign: 'center', fontWeight: 700 }}>{quantity}</div>
-                                <button onClick={() => setQuantity(q => q + 1)} style={{ padding: '10px 16px', background: '#111', color: '#fff' }}>+</button>
+                            <div style={{ fontSize: 14, color: '#6b7280', marginBottom: 8 }}>
+                                Quantity (in multiples of {minQty})
                             </div>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 999, overflow: 'hidden' }}>
+                                <button
+                                    onClick={decrementQuantity}
+                                    disabled={quantity <= minQty}
+                                    style={{
+                                        padding: '10px 16px',
+                                        background: quantity <= minQty ? '#f9fafb' : '#f3f4f6',
+                                        color: quantity <= minQty ? '#9ca3af' : '#374151',
+                                        cursor: quantity <= minQty ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    –
+                                </button>
+                                <div style={{ minWidth: 56, textAlign: 'center', fontWeight: 700 }}>{quantity}</div>
+                                <button
+                                    onClick={incrementQuantity}
+                                    style={{ padding: '10px 16px', background: '#111', color: '#fff' }}
+                                >
+                                    +
+                                </button>
+                            </div>
+
                         </div>
-                        <button onClick={addToCart} className='bg-[#EF6A22] flex-1 text-white px-4 py-2 rounded-md h-[50px] flex justify-center items-center hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer'>Add to Cart</button>
+                        <button
+                            onClick={addToCart}
+                            disabled={(product.inventory || 0) <= 0}
+                            className={`flex-1 px-4 py-2 rounded-md h-[50px] flex justify-center items-center transition-all duration-300 ${(product.inventory || 0) <= 0
+                                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                : 'bg-[#EF6A22] text-white hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] hover:cursor-pointer'
+                                }`}
+                        >
+                            {(product.inventory || 0) <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
                         <button className='bg-[#2862AD] flex-1 text-white px-4 py-2 rounded-md h-[50px] flex justify-center items-center hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer'><IoIosCall size={20} /> Contact Us</button>
                     </div>
 

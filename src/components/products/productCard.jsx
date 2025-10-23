@@ -2,29 +2,24 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { IoChevronDownSharp } from "react-icons/io5";
 import { useRouter } from 'next/navigation';
 import { addToCart as addToCartApi } from '@/utils/cartService'
 import { toast } from 'react-toastify'
 
 const ProductCard = ({ product }) => {
-    const quickOptions = [1, 2, 3, 5, 10]
-    const [open, setOpen] = useState(false)
-    const [value, setValue] = useState(1)
-    const [isCustom, setIsCustom] = useState(false)
-    const [customValue, setCustomValue] = useState('')
     const [adding, setAdding] = useState(false)
     const router = useRouter();
-    const applyCustom = () => {
-        const num = Number(customValue)
-        if (!Number.isNaN(num) && num > 0) {
-            setValue(num)
-            setIsCustom(false)
-            setOpen(false)
-        }
-    }
+
+    // Use minQty as the default quantity
+    const quantity = product.minQty || 1;
 
     const handleAdd = async () => {
+        // Check if product is in stock
+        if ((product.inventory || 0) <= 0) {
+            toast.error('This product is currently out of stock.')
+            return;
+        }
+
         try {
             setAdding(true)
             await addToCartApi({
@@ -32,8 +27,7 @@ const ProductCard = ({ product }) => {
                 productName: product.name,
                 featuredImage: product.image,
                 boxQty: 0,
-                packQty: 0,
-                units: value,
+                units: quantity,
             })
             toast.success('Added to cart')
         } catch (e) {
@@ -55,73 +49,36 @@ const ProductCard = ({ product }) => {
                     className='object-cover rounded-t-lg'
                     priority={false}
                 />
+                {/* Stock Status Badge */}
+                {(product.inventory || 0) <= 0 && (
+                    <div className="absolute top-2 right-2 p-2 bg-white text-red-500 border border-red-500 rounded-full flex items-center justify-center text-xs font-medium shadow-lg" style={{ fontFamily: 'var(--font-montserrat)' }}>
+                        Out Of Stock
+                    </div>
+                )}
             </div>
             <div className='mt-[8px]'>
                 <p className='text-xs text-gray-500'>{product.category || 'Category Name'}</p>
                 <h3 className='text[16px] font-medium text-gray-900 line-clamp-1'>{product.name}</h3>
-            </div>
-            <div className=" w-full flex justify-center gap-2 mt-2">
-                <div className="w-[35%] border rounded-bl-lg relative select-none">
-                    <button
-                        type="button"
-                        onClick={() => setOpen((p) => !p)}
-                        className="w-full cursor-pointer h-full py-2 px-2 text-sm text-left hover:bg-gray-50 rounded-bl-lg flex justify-between items-center " style={{ fontFamily: 'var(--font-montserrat)' }}
-                        aria-haspopup="listbox"
-                        aria-expanded={open}
-                    >
-                        Qty: {value} <IoChevronDownSharp />
-                    </button>
-
-                    {open && (
-                        <div className="absolute left-0 bottom-full mb-1 w-[220px] bg-white border rounded-md shadow z-20">
-                            <ul role="listbox" className="max-h-56 overflow-auto">
-                                {quickOptions.map((opt) => (
-                                    <li key={opt}>
-                                        <button
-                                            type="button"
-                                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                                            onClick={() => { setValue(opt); setOpen(false); setIsCustom(false); }}
-                                            role="option"
-                                            aria-selected={value === opt}
-                                        >
-                                            {opt}
-                                        </button>
-                                    </li>
-                                ))}
-                                <li className="border-t">
-                                    <button
-                                        type="button"
-                                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                                        onClick={() => { setIsCustom(true); }}
-                                    >
-                                        Custom…
-                                    </button>
-                                </li>
-                            </ul>
-
-                            {isCustom && (
-                                <div className="p-3 border-t flex items-center gap-2">
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        value={customValue}
-                                        onChange={(e) => setCustomValue(e.target.value)}
-                                        placeholder="Enter qty"
-                                        className="flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
-                                    />
-                                    <button
-                                        type="button"
-                                        className="text-white bg-[#EF6A22] px-2 py-1 rounded text-sm"
-                                        onClick={applyCustom}
-                                    >
-                                        Apply
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                <div className='mt-1 flex items-center justify-between'>
+                    <p className='text-sm font-semibold text-gray-700'>₹{Number(product.price || 0).toFixed(2)}</p>
                 </div>
-                <button onClick={handleAdd} disabled={adding} className='flex-1 bg-[#EF6A22] text-white px-4 py-2 rounded-br-lg hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer disabled:opacity-60'>{adding ? 'Adding…' : 'Add to Cart'}</button>
+            </div>
+            <div className="w-full flex justify-center gap-2 mt-2">
+                <div className="text-xs text-gray-500 text-center w-full mb-1">
+                    Min Qty: {quantity}
+                </div>
+            </div>
+            <div className="w-full flex justify-center gap-2">
+                <button
+                    onClick={handleAdd}
+                    disabled={adding || (product.inventory || 0) <= 0}
+                    className={`w-full px-4 py-2 rounded-lg transition-all duration-300 ${(product.inventory || 0) <= 0
+                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        : 'bg-[#EF6A22] text-white hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] hover:cursor-pointer'
+                        } ${adding ? 'opacity-60' : ''}`}
+                >
+                    {adding ? 'Adding…' : (product.inventory || 0) <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
             </div>
         </div>
     )
