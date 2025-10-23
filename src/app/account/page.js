@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/utils/axiosInstance';
 import { getCookie } from '@/utils/cookieUtil';
 
@@ -10,6 +11,7 @@ const Tabs = {
 };
 
 export default function AccountPage() {
+    const router = useRouter();
     const [active, setActive] = useState(Tabs.PROFILE);
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
@@ -48,6 +50,10 @@ export default function AccountPage() {
     const saveProfile = async () => {
         await api.put(`/users/${uid}`, form);
         alert('Profile updated');
+    };
+
+    const handleSignOut = () => {
+        router.push('/logout');
     };
 
     if (loading) {
@@ -103,7 +109,7 @@ export default function AccountPage() {
                             <button onClick={() => setActive(Tabs.PROFILE)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.PROFILE ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Account Details</button>
                             <button onClick={() => setActive(Tabs.ORDERS)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.ORDERS ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Order History</button>
                             <button onClick={() => setActive(Tabs.ADDRESSES)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.ADDRESSES ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Addresses</button>
-                            <a href="/logout" className="block px-3 py-2 rounded-lg border border-gray-200 text-red-600 hover:bg-red-50 transition">Sign Out</a>
+                            <button onClick={handleSignOut} className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-red-600 hover:bg-red-50 transition">Sign Out</button>
                         </nav>
                     </aside>
 
