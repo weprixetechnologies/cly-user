@@ -57,18 +57,23 @@ const ProductCard = ({ product }) => {
                 )}
             </div>
             <div className='mt-[8px]'>
-                <p className='text-xs text-gray-500'>{product.category || 'Category Name'}</p>
+                <div className="flex justify-between items-center">
+                    <p className='text-xs text-gray-500'>{product.category || 'Category Name'}</p>
+                    <div className="text-xs text-gray-500 text-center ">
+                        Min Qty: {quantity}
+                    </div>
+                </div>
                 <h3 className='text[16px] font-medium text-gray-900 line-clamp-1'>{product.name}</h3>
                 <div className='mt-1 flex items-center justify-between'>
                     <p className='text-sm font-semibold text-gray-700'>₹{Number(product.price || 0).toFixed(2)}</p>
                 </div>
             </div>
-            <div className="w-full flex justify-center gap-2 mt-2">
+            {/* <div className="w-full flex justify-center gap-2 mt-2">
                 <div className="text-xs text-gray-500 text-center w-full mb-1">
                     Min Qty: {quantity}
                 </div>
-            </div>
-            <div className="w-full flex justify-center gap-2">
+            </div> */}
+            <div className="w-full flex justify-center gap-2 mt-2">
                 <button
                     onClick={handleAdd}
                     disabled={adding || (product.inventory || 0) <= 0}

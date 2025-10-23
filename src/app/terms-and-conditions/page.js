@@ -1,97 +1,134 @@
-"use client"
+'use client'
 
-import React from 'react'
+import { useEffect, useState } from 'react';
+import axiosInstance from '@/utils/axiosInstance';
+import { ClipLoader } from 'react-spinners';
 
-export default function TermsAndConditionsPage() {
+const TermsAndConditionsPage = () => {
+    const [policy, setPolicy] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchPolicy();
+    }, []);
+
+    const fetchPolicy = async () => {
+        try {
+            setLoading(true);
+            const response = await axiosInstance.get('/policies/type/terms_conditions');
+            setPolicy(response.data.data);
+        } catch (error) {
+            console.error('Error fetching terms and conditions:', error);
+            setError('Failed to load terms and conditions');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="bg-white rounded-lg shadow-sm p-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-8">Terms and Conditions</h1>
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 flex items-center justify-center">
+                <div className="text-center">
+                    <ClipLoader color="#EF6A22" size={50} />
+                    <p className="mt-4 text-gray-600">Loading terms and conditions...</p>
+                </div>
+            </div>
+        );
+    }
 
-                    <div className="prose prose-lg max-w-none">
-                        <p className="text-gray-600 mb-6">
-                            Last updated: {new Date().toLocaleDateString()}
+    if (error || !policy) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 flex items-center justify-center">
+                <div className="text-center max-w-md mx-auto p-6">
+                    <div className="bg-white rounded-2xl shadow-lg p-8">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Content Not Available</h2>
+                        <p className="text-gray-600 mb-4">
+                            {error || 'Terms and conditions are not available at the moment.'}
                         </p>
+                        <button
+                            onClick={() => window.history.back()}
+                            className="bg-[#EF6A22] text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
-                            <p className="text-gray-700 mb-4">
-                                By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Use License</h2>
-                            <p className="text-gray-700 mb-4">
-                                Permission is granted to temporarily download one copy of the materials on CLY's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
-                            </p>
-                            <ul className="list-disc pl-6 text-gray-700 mb-4">
-                                <li>modify or copy the materials</li>
-                                <li>use the materials for any commercial purpose or for any public display</li>
-                                <li>attempt to reverse engineer any software contained on the website</li>
-                                <li>remove any copyright or other proprietary notations from the materials</li>
-                            </ul>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. Product Information</h2>
-                            <p className="text-gray-700 mb-4">
-                                We strive to provide accurate product information, including descriptions, prices, and availability. However, we do not warrant that product descriptions or other content is accurate, complete, reliable, current, or error-free.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">4. Pricing and Payment</h2>
-                            <p className="text-gray-700 mb-4">
-                                All prices are subject to change without notice. We reserve the right to modify or discontinue any product or service at any time. Payment terms are as specified at the time of purchase.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Limitation of Liability</h2>
-                            <p className="text-gray-700 mb-4">
-                                In no event shall CLY or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on CLY's website, even if CLY or a CLY authorized representative has been notified orally or in writing of the possibility of such damage.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Privacy Policy</h2>
-                            <p className="text-gray-700 mb-4">
-                                Your privacy is important to us. Please review our Privacy Policy, which also governs your use of the website, to understand our practices.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Governing Law</h2>
-                            <p className="text-gray-700 mb-4">
-                                These terms and conditions are governed by and construed in accordance with the laws of India and you irrevocably submit to the exclusive jurisdiction of the courts in that state or location.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Changes to Terms</h2>
-                            <p className="text-gray-700 mb-4">
-                                CLY reserves the right to revise these terms of service at any time without notice. By using this website, you are agreeing to be bound by the then current version of these terms of service.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Contact Information</h2>
-                            <p className="text-gray-700 mb-4">
-                                If you have any questions about these Terms and Conditions, please contact us at:
-                            </p>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <p className="text-gray-700">
-                                    <strong>Email:</strong> support@cly.com<br />
-                                    <strong>Phone:</strong> +91-XXXXXXXXXX<br />
-                                    <strong>Address:</strong> Your Business Address, City, State, India
-                                </p>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50">
+            <div className="max-w-[90%] mx-auto px-4 py-12">
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-[#EF6A22] to-orange-600 px-8 py-12 text-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h1 className="text-4xl font-bold mb-2">{policy.title}</h1>
+                                <p className="text-orange-100 text-lg">Version {policy.version}</p>
                             </div>
-                        </section>
+                            <div className="hidden md:block">
+                                <div className="w-20 h-20 bg-orange-100 bg-opacity-80 rounded-full flex items-center justify-center">
+                                    <svg className="w-10 h-10 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-8 py-12">
+                        <div className="prose prose-lg max-w-none">
+                            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                                {policy.content}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-12 pt-8 border-t border-gray-200">
+                            <div className="flex flex-col md:flex-row justify-between items-center">
+                                <div className="text-sm text-gray-500 mb-4 md:mb-0">
+                                    Last updated: {new Date(policy.updated_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                                <div className="flex space-x-4">
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="flex items-center space-x-2 text-[#EF6A22] hover:text-orange-600 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        <span>Print</span>
+                                    </button>
+                                    <button
+                                        onClick={() => window.history.back()}
+                                        className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                        </svg>
+                                        <span>Go Back</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default TermsAndConditionsPage;

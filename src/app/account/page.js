@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/utils/axiosInstance';
 import { getCookie } from '@/utils/cookieUtil';
+import { getUserAddresses } from '@/utils/addressService';
 
 const Tabs = {
     PROFILE: 'PROFILE',
@@ -30,9 +31,10 @@ export default function AccountPage() {
         (async () => {
             try {
                 setLoading(true);
-                const [uRes, oRes] = await Promise.all([
+                const [uRes, oRes, aRes] = await Promise.all([
                     api.get(`/users/${uid}`),
-                    api.get(`/order/user/${uid}/orders`)
+                    api.get(`/order/user/${uid}/orders`),
+                    getUserAddresses().catch(() => ({ data: [] })) // Handle addresses gracefully
                 ]);
                 const u = uRes?.data?.user || null;
                 setUser(u);
@@ -42,7 +44,7 @@ export default function AccountPage() {
                     gstin: u?.gstin || ''
                 });
                 setOrders(oRes?.data?.data || []);
-                setAddresses([]);
+                setAddresses(aRes?.data || []);
             } finally { setLoading(false); }
         })();
     }, [uid]);
@@ -176,22 +178,46 @@ export default function AccountPage() {
                             <section className="mt-6 space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div className="font-medium text-gray-900">Saved Addresses</div>
-                                    <button className="px-3 py-2 border rounded-md hover:bg-orange-50 border-orange-200 text-[#EF6A22]">Add new address</button>
+                                    <button
+                                        onClick={() => router.push('/account/addresses')}
+                                        className="px-3 py-2 border rounded-md hover:bg-orange-50 border-orange-200 text-[#EF6A22]"
+                                    >
+                                        Manage Addresses
+                                    </button>
                                 </div>
                                 {addresses.length === 0 && (
-                                    <div className="text-gray-500 text-sm">No addresses yet.</div>
+                                    <div className="text-center py-8">
+                                        <div className="text-gray-500 text-sm mb-4">No addresses saved yet.</div>
+                                        <button
+                                            onClick={() => router.push('/account/addresses')}
+                                            className="px-4 py-2 bg-[#EF6A22] text-white rounded-md hover:opacity-90 transition"
+                                        >
+                                            Add Your First Address
+                                        </button>
+                                    </div>
                                 )}
                                 {addresses.map((a) => (
                                     <div key={a.addressID} className="border rounded-xl p-4 flex items-start justify-between bg-white">
                                         <div className="text-sm text-gray-700">
-                                            <div className="font-medium text-gray-900">{a.addressName}</div>
-                                            <div className="text-gray-600">{a.addressPhone}</div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className="font-medium text-gray-900">{a.name}</div>
+                                                {a.isDefault && (
+                                                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                                        Default
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-gray-600">{a.phone}</div>
                                             <div className="text-gray-600">{a.addressLine1}{a.addressLine2 ? `, ${a.addressLine2}` : ''}</div>
-                                            <div className="text-gray-600">{a.addressCity}, {a.addressState} - {a.addressPincode}</div>
+                                            <div className="text-gray-600">{a.city}, {a.state} - {a.pincode}</div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button className="px-3 py-1 border rounded-md text-sm hover:bg-orange-50 border-orange-200 text-[#EF6A22]">Edit</button>
-                                            <button className="px-3 py-1 border rounded-md text-sm hover:bg-red-50 border-red-200 text-red-600">Remove</button>
+                                            <button
+                                                onClick={() => router.push('/account/addresses')}
+                                                className="px-3 py-1 border rounded-md text-sm hover:bg-orange-50 border-orange-200 text-[#EF6A22]"
+                                            >
+                                                Edit
+                                            </button>
                                         </div>
                                     </div>
                                 ))}

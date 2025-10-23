@@ -8,6 +8,8 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
     const [startX, setStartX] = useState(0)
     const [scrollLeft, setScrollLeft] = useState(0)
     const [isMobile, setIsMobile] = useState(false)
+    const [isHovered, setIsHovered] = useState(false)
+    const autoSlideRef = useRef(null)
 
     // Clone first and last slides to give an infinite feel
     // We'll jump scroll position when reaching edges
@@ -46,6 +48,33 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
         return () => window.removeEventListener('resize', update)
     }, [])
 
+    // Auto-slide functionality
+    useEffect(() => {
+        if (slides.length <= 1) return // Don't auto-slide if there's only one or no slides
+
+        const startAutoSlide = () => {
+            if (autoSlideRef.current) {
+                clearInterval(autoSlideRef.current)
+            }
+            autoSlideRef.current = setInterval(() => {
+                if (!isHovered && !isMouseDown) {
+                    scrollBySlides(1)
+                }
+            }, 3000) // 3 seconds
+        }
+
+        startAutoSlide()
+
+        return () => {
+            if (autoSlideRef.current) {
+                clearInterval(autoSlideRef.current)
+            }
+        }
+    }, [slides.length, isHovered, isMouseDown])
+
+    // Pause auto-slide on hover
+    const handleMouseEnter = () => setIsHovered(true)
+
     // Handle infinite jump when reaching clones
     const handleScroll = useCallback(() => {
         const el = containerRef.current
@@ -70,7 +99,10 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
         setStartX(e.pageX - el.offsetLeft)
         setScrollLeft(el.scrollLeft)
     }
-    const onMouseLeave = () => setIsMouseDown(false)
+    const onMouseLeave = () => {
+        setIsMouseDown(false)
+        setIsHovered(false)
+    }
     const onMouseUp = () => setIsMouseDown(false)
     const onMouseMove = (e) => {
         const el = containerRef.current
@@ -84,12 +116,12 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
     // Touch handling uses native scrolling, we just ensure snapping visuals
 
     // Navigation buttons
-    const scrollBySlides = (delta) => {
+    const scrollBySlides = useCallback((delta) => {
         const el = containerRef.current
         const slideWidth = slideWidthRef.current
         if (!el || !slideWidth) return
         el.scrollTo({ left: el.scrollLeft + delta * slideWidth, behavior: 'smooth' })
-    }
+    }, [])
 
     return (
         <div className="relative py-4">
@@ -119,6 +151,7 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
                 onMouseLeave={onMouseLeave}
                 onMouseUp={onMouseUp}
                 onMouseMove={onMouseMove}
+                onMouseEnter={handleMouseEnter}
                 className="overflow-x-auto no-scrollbar scroll-smooth"
                 style={{
                     WebkitOverflowScrolling: 'touch',

@@ -7,11 +7,11 @@ import { BsHandbag } from 'react-icons/bs'
 import { CiUser } from 'react-icons/ci'
 import { FiSearch } from 'react-icons/fi'
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai'
-import { useSelector } from 'react-redux'
+import { useUser } from '@/hooks/useUser'
 
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const isAuthenticated = useSelector((s) => s.auth.isAuthenticated)
+    const { user, loading, isAuthenticated } = useUser()
 
     const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev)
 
@@ -81,7 +81,25 @@ const Header = () => {
                             <li><a className="block py-3" href="/categories">Categories</a></li>
                             <li><a className="block py-3" href="/contact">Contact Us</a></li>
                             <li><a className="block py-3" href="/how-we-work">How We Work</a></li>
-                            <li><a className="block py-3" href="/account">Account</a></li>
+                            <li>
+                                {isAuthenticated ? (
+                                    <div className="py-3">
+                                        <div className="text-sm text-gray-600 mb-1">
+                                            {loading ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                                                    <span>Loading...</span>
+                                                </div>
+                                            ) : (
+                                                `Welcome Back, ${user?.name || 'User'}!`
+                                            )}
+                                        </div>
+                                        <a className="block text-[#EF6A22] font-medium" href="/account">Account</a>
+                                    </div>
+                                ) : (
+                                    <a className="block py-3" href="/account">Account</a>
+                                )}
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -125,7 +143,22 @@ const Header = () => {
                         <CiUser size={24} />
                     </a>
                     {isAuthenticated ? (
-                        <a href="/account" className='bg-black text-white px-4 py-2 rounded-md hover:opacity-90 transition'>Profile</a>
+                        <div className="flex items-center gap-2">
+                            {loading ? (
+                                <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-md">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                                        <span className="text-sm">Loading...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-[#EF6A22] text-white px-4 py-2 rounded-md hover:opacity-90 transition">
+                                    <div className="text-sm font-medium">
+                                        Welcome Back, {user?.name || 'User'}!
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     ) : (
                         <a href="/login" className='bg-[#EF6A22] text-white px-4 py-2 rounded-md hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer'>Sign In / Sign Up</a>
                     )}

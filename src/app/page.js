@@ -10,7 +10,7 @@ import ProductGrid from "@/components/products/productGrid";
 // export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http//72.60.219.181:3001/api';
   const [desktopRes, mobileRes] = await Promise.all([
     fetch(`${baseUrl}/sliders/desktop`, { next: { revalidate: 60 } }),
     fetch(`${baseUrl}/sliders/mobile`, { next: { revalidate: 60 } }),
@@ -31,7 +31,7 @@ async function fetchSliders() {
 }
 
 async function fetchCategories() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http//72.60.219.181:3001/api';
   try {
     const res = await fetch(`${baseUrl}/categories`, { next: { revalidate: 1 } });
     if (!res.ok) return [];
@@ -57,14 +57,14 @@ export default async function Home() {
       <CategoriesCom categories={categories} />
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
-      <div className="px-15">
+      <div className="md:px-15 px-4">
         <ProductGrid initialLimit={8} maxTotal={8} />
       </div>
       <div className="h-7"></div>
       <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
-      <div className="px-15">
+      <div className="md:px-15 px-4">
         <ProductGridInfinity initialLimit={8} maxTotal={100} />
       </div>
     </div>

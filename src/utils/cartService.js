@@ -51,20 +51,17 @@ export const calculateCartDetails = (cartItems) => {
         };
     }
 
-    // For now, we'll use placeholder pricing since the backend doesn't provide pricing
-    // In a real implementation, you'd fetch product prices from the backend
+    // Calculate pricing using actual product prices from backend
     const subtotal = cartItems.reduce((sum, item) => {
-        // Placeholder: assume each item costs 100 rupees
-        // You should replace this with actual product pricing from your backend
-        const itemPrice = 100; // This should come from product data
-        const quantity = (item.boxQty || 0) + (item.units || 0);
+        const itemPrice = item.productPrice || 100; // Use actual price from product data
+        const quantity = item.units || 0;
         return sum + (itemPrice * quantity);
     }, 0);
 
     const deliveryFee = subtotal >= 499 ? 0 : 50; // Free delivery over 499
     const total = subtotal + deliveryFee;
     const itemCount = cartItems.reduce((count, item) => {
-        return count + (item.boxQty || 0) + (item.units || 0);
+        return count + (item.units || 0);
     }, 0);
 
     return {

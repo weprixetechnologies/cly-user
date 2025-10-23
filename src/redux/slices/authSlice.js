@@ -4,6 +4,8 @@ import { getCookie } from '@/utils/cookieUtil';
 const initialState = {
     isAuthenticated: false,
     uid: null,
+    user: null,
+    loading: false,
 };
 
 const authSlice = createSlice({
@@ -20,9 +22,16 @@ const authSlice = createSlice({
         setLoggedOut(state) {
             state.isAuthenticated = false;
             state.uid = null;
+            state.user = null;
+        },
+        setUser(state, action) {
+            state.user = action.payload;
+        },
+        setLoading(state, action) {
+            state.loading = action.payload;
         }
     }
 });
 
-export const { initAuthFromCookies, setLoggedOut } = authSlice.actions;
+export const { initAuthFromCookies, setLoggedOut, setUser, setLoading } = authSlice.actions;
 export default authSlice.reducer;
