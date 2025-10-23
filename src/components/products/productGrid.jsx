@@ -10,6 +10,10 @@ const mapApiProductToCard = (p) => ({
     name: p.productName,
     image: p.featuredImages || PLACEHOLDER_IMG,
     category: p.categoryName || 'Category',
+    categoryID: p.categoryID,
+    minQty: p.minQty || 1,
+    price: p.productPrice || 0,
+    inventory: p.inventory || 0,
 })
 
 const ProductGrid = ({ page = 1, limit = 20, search = '' }) => {

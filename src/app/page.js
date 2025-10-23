@@ -65,7 +65,7 @@ export default async function Home() {
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
       <div className="px-15">
-        <ProductGridInfinity initialLimit={8} maxTotal={8} />
+        <ProductGridInfinity initialLimit={8} maxTotal={100} />
       </div>
     </div>
   );
