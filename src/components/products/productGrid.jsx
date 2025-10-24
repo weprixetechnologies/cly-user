@@ -27,7 +27,7 @@ const ProductGrid = ({ page = 1, limit = 20, search = '' }) => {
             setLoading(true)
             setError('')
             try {
-                const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300\/api'
+                const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api'
                 const url = new URL(baseUrl + '/products/list')
                 url.searchParams.set('page', String(page))
                 url.searchParams.set('limit', String(limit))
