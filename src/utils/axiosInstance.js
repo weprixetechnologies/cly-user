@@ -10,7 +10,7 @@ const redirectToLogin = () => {
     window.location.href = '/login';
 };
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
+const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300\/api';
 
 const axiosInstance = axios.create({
     baseURL,
