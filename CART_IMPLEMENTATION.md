@@ -11,9 +11,9 @@ This document describes the cart page implementation with modern design and func
 - **Quantity Management**: Shows selected quantities and variations
 
 ### 💰 Order Summary
-- **Price Breakdown**: Subtotal, delivery fees, and total
+- **Price Breakdown**: Subtotal and total (no delivery fees)
 - **Coupon Support**: Apply and remove discount coupons
-- **Free Delivery**: Shows free delivery eligibility for orders over ₹499
+- **No Delivery Fees**: All orders have no delivery charges
 - **Savings Display**: Shows amount saved with coupons
 
 ### 📍 Address & Payment

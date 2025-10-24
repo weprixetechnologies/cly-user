@@ -2,21 +2,50 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import logo from './../../../public/logo.jpg'
 import { BsHandbag } from 'react-icons/bs'
 import { CiUser } from 'react-icons/ci'
 import { FiSearch } from 'react-icons/fi'
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai'
 import { useUser } from '@/hooks/useUser'
+import SearchSuggestions from '../search/SearchSuggestions'
 
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [showSuggestions, setShowSuggestions] = useState(false)
     const { user, loading, isAuthenticated } = useUser()
+    const router = useRouter()
 
     const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev)
 
+    const handleSearch = (e) => {
+        e.preventDefault()
+        if (searchQuery.trim()) {
+            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+            setShowSuggestions(false)
+        }
+    }
+
+    const handleSearchSelect = (query) => {
+        router.push(`/search?q=${encodeURIComponent(query.trim())}`)
+        setShowSuggestions(false)
+    }
+
+    const handleInputChange = (e) => {
+        setSearchQuery(e.target.value)
+        setShowSuggestions(e.target.value.length >= 2)
+    }
+
+    const handleInputFocus = () => {
+        if (searchQuery.length >= 2) {
+            setShowSuggestions(true)
+        }
+    }
+
     return (
-        <div className="relative border-b border-gray-200">
+        <div className="sticky top-0 z-[9999] border-b border-gray-200">
             <div className="hidden md:flex topbar justify-between items-center py-2 px-6 bg-[#EF6A22] text-white">
                 <p className='text-sm'>India's Largest Stationary Point for Imported Items</p>
                 <div className="flex justify-end items-center gap-4">
@@ -62,19 +91,29 @@ const Header = () => {
             {isMobileMenuOpen && (
                 <div id="mobile-menu" className="md:hidden absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-md z-50">
                     <div className="px-4 py-3">
-                        <form action="/search" method="get" className="relative w-full mb-3">
-                            <label htmlFor="mobile-site-search" className="sr-only">Search</label>
-                            <input
-                                id="mobile-site-search"
-                                name="q"
-                                type="search"
-                                placeholder="Search products..."
-                                className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                        <div className="relative w-full mb-3">
+                            <form onSubmit={handleSearch} className="relative">
+                                <label htmlFor="mobile-site-search" className="sr-only">Search</label>
+                                <input
+                                    id="mobile-site-search"
+                                    type="search"
+                                    value={searchQuery}
+                                    onChange={handleInputChange}
+                                    onFocus={handleInputFocus}
+                                    placeholder="Search products..."
+                                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                                />
+                                <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
+                                    <FiSearch size={18} />
+                                </button>
+                            </form>
+                            <SearchSuggestions
+                                searchQuery={searchQuery}
+                                onSelect={handleSearchSelect}
+                                isVisible={showSuggestions}
+                                onClose={() => setShowSuggestions(false)}
                             />
-                            <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
-                                <FiSearch size={18} />
-                            </button>
-                        </form>
+                        </div>
                         <ul className="flex flex-col divide-y divide-gray-100">
                             <li><a className="block py-3" href="/">Home</a></li>
                             <li><a className="block py-3" href="/products">Shop</a></li>
@@ -121,19 +160,29 @@ const Header = () => {
                     </div>
                 </div>
                 <div className="flex-1 px-6">
-                    <form action="/search" method="get" className="relative max-w-xl mx-auto w-full">
-                        <label htmlFor="site-search" className="sr-only">Search</label>
-                        <input
-                            id="site-search"
-                            name="q"
-                            type="search"
-                            placeholder="Search products..."
-                            className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                    <div className="relative max-w-xl mx-auto w-full">
+                        <form onSubmit={handleSearch} className="relative">
+                            <label htmlFor="site-search" className="sr-only">Search</label>
+                            <input
+                                id="site-search"
+                                type="search"
+                                value={searchQuery}
+                                onChange={handleInputChange}
+                                onFocus={handleInputFocus}
+                                placeholder="Search products..."
+                                className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                            />
+                            <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
+                                <FiSearch size={18} />
+                            </button>
+                        </form>
+                        <SearchSuggestions
+                            searchQuery={searchQuery}
+                            onSelect={handleSearchSelect}
+                            isVisible={showSuggestions}
+                            onClose={() => setShowSuggestions(false)}
                         />
-                        <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
-                            <FiSearch size={18} />
-                        </button>
-                    </form>
+                    </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     <a href="/cart" aria-label="Cart">

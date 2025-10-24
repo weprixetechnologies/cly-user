@@ -34,13 +34,6 @@ const BreakdownCart = ({ breakdownData, couponDiscount, appliedCoupon, onRemoveC
                     <span></span>
                 </div>
 
-                {/* Delivery Fee */}
-                <div className="flex justify-between text-sm">
-                    <span>Delivery Fee</span>
-                    <span className={deliveryFee === 0 ? 'text-green-600' : ''}>
-                        {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee.toFixed(2)}`}
-                    </span>
-                </div>
 
                 {/* Applied Coupon */}
                 {appliedCoupon && (
@@ -73,14 +66,6 @@ const BreakdownCart = ({ breakdownData, couponDiscount, appliedCoupon, onRemoveC
                 </div>
             </div>
 
-            {/* Free delivery message */}
-            {subtotal >= 499 && (
-                <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                    <p className="text-sm text-green-700 font-medium">
-                        🎉 You're eligible for free delivery!
-                    </p>
-                </div>
-            )}
 
             {/* Savings message */}
             {appliedCoupon && couponDiscount > 0 && (

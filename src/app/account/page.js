@@ -168,7 +168,10 @@ export default function AccountPage() {
                                         </div>
                                         <div className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleString()}</div>
                                         <div className="mt-2 text-sm text-gray-700">{o.productName} — Box {o.boxQty}, Units {o.units}</div>
-                                        <a href={`/order-success/order-summary/${o.orderID}`} className="text-xs mt-2 inline-block underline text-[#EF6A22]">View summary</a>
+                                        <div className="mt-2 flex items-center justify-between">
+                                            <div className="text-sm font-semibold text-gray-900">Amount: ₹{o.order_amount || '0.00'}</div>
+                                            <a href={`/order-success/order-summary/${o.orderID}`} className="text-xs underline text-[#EF6A22]">View summary</a>
+                                        </div>
                                     </div>
                                 ))}
                             </section>

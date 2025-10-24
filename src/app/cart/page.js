@@ -305,13 +305,6 @@ const Page = () => {
                                     onCartUpdated={loadCart}
                                 />
                             </Suspense>
-                            <div className="border border-gray-200 rounded-lg">
-                                {cartDetail.total > 499 &&
-                                    <p className='text-xs text-green-500 p-4 flex gap-2 items-center font-medium'>
-                                        <CiDeliveryTruck size={16} /> Yay! Your order is eligible for free delivery...
-                                    </p>
-                                }
-                            </div>
                         </>
                     )
                         :

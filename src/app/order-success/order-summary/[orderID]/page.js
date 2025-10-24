@@ -46,9 +46,9 @@ export default function OrderSummary({ params }) {
     }
 
     const info = data.info;
-    const subtotal = data.items.reduce((s, it) => s + (Number(it.productPrice || 0) * ((it.boxQty || 0) + (it.units || 0))), 0);
-    const delivery = subtotal >= 499 ? 0 : 50;
-    const total = subtotal + delivery;
+    // Use order_amount from database if available, otherwise calculate from items
+    const subtotal = Number(info.order_amount || 0) || data.items.reduce((s, it) => s + (Number(it.productPrice || 0) * (it.units || 0)), 0);
+    const total = subtotal; // No delivery fee
 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-8">
@@ -65,25 +65,33 @@ export default function OrderSummary({ params }) {
 
                 <div className="grid md:grid-cols-3 gap-6 mt-8">
                     <div className="md:col-span-2 space-y-4">
-                        {data.items.map((it, idx) => (
-                            <div key={idx} className="border rounded-lg p-4 flex items-center gap-4">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={it.featuredImage || ''} alt={it.productName} className="w-20 h-20 object-cover rounded" />
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-medium truncate">{it.productName}</div>
-                                    <div className="text-sm text-gray-500">SKU: {it.sku || '—'}</div>
-                                    <div className="text-xs text-gray-500 mt-1">Qty: {(it.boxQty || 0) + (it.units || 0)}</div>
+                        {data.items.map((it, idx) => {
+                            const unitPrice = Number(it.productPrice || 0);
+                            const quantity = (it.units || 0);
+                            const totalPrice = unitPrice * quantity;
+
+                            return (
+                                <div key={idx} className="border rounded-lg p-4 flex items-center gap-4">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={it.featuredImage || ''} alt={it.productName} className="w-20 h-20 object-cover rounded" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-medium truncate">{it.productName}</div>
+                                        <div className="text-sm text-gray-500">SKU: {it.sku || '—'}</div>
+                                        <div className="text-xs text-gray-500 mt-1">Qty: {quantity}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm text-gray-500">₹{unitPrice.toFixed(2)} × {quantity}</div>
+                                        <div className="font-semibold text-lg">₹{totalPrice.toFixed(2)}</div>
+                                    </div>
                                 </div>
-                                <div className="font-semibold">₹ {Number(it.productPrice || 0).toFixed(2)}</div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                     <div className="space-y-4">
                         <div className="border rounded-lg p-4">
-                            <div className="font-semibold mb-2">Summary</div>
+                            <div className="font-semibold mb-2">Order Summary</div>
                             <div className="flex justify-between text-sm"><span className="text-gray-600">Subtotal</span><span>₹ {subtotal.toFixed(2)}</span></div>
-                            <div className="flex justify-between text-sm"><span className="text-gray-600">Delivery</span><span>{delivery === 0 ? 'Free' : `₹ ${delivery.toFixed(2)}`}</span></div>
-                            <div className="border-t mt-3 pt-3 flex justify-between font-semibold"><span>Total</span><span>₹ {total.toFixed(2)}</span></div>
+                            <div className="border-t mt-3 pt-3 flex justify-between font-semibold"><span>Total Amount</span><span>₹ {total.toFixed(2)}</span></div>
                         </div>
                         <div className="border rounded-lg p-4">
                             <div className="font-semibold mb-2">Payment</div>

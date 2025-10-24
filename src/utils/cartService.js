@@ -58,8 +58,8 @@ export const calculateCartDetails = (cartItems) => {
         return sum + (itemPrice * quantity);
     }, 0);
 
-    const deliveryFee = subtotal >= 499 ? 0 : 50; // Free delivery over 499
-    const total = subtotal + deliveryFee;
+    const deliveryFee = 0; // No delivery fee
+    const total = subtotal; // Total equals subtotal
     const itemCount = cartItems.reduce((count, item) => {
         return count + (item.units || 0);
     }, 0);
