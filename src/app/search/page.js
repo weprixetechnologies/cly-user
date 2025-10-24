@@ -74,8 +74,8 @@ export default function SearchPage() {
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    placeholder="Try \" marker\", \"pen\", \"notebook\"…"
-                                className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                    placeholder="Try Our Latest Stationaries"
+                                    className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
                                 />
                                 <button
                                     onClick={handleSearch}
