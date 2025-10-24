@@ -32,6 +32,10 @@ const ProductCard = ({ product }) => {
             toast.success('Added to cart')
         } catch (e) {
             const msg = e?.response?.data?.message || e?.message || 'Failed to add to cart'
+
+            window.location.href = '/login'
+
+
             toast.error(msg)
         } finally {
             setAdding(false)

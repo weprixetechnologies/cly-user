@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import logo from './../../../public/logo.jpg'
@@ -15,8 +15,13 @@ const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [showSuggestions, setShowSuggestions] = useState(false)
+    const [isClient, setIsClient] = useState(false)
     const { user, loading, isAuthenticated } = useUser()
     const router = useRouter()
+
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
 
     const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev)
 
@@ -53,10 +58,10 @@ const Header = () => {
                         <a href="/account">Account</a>
                     </section>
                     <section className='text-sm border-r border-white pr-4'>
-                        <a href="/account">How We Work</a>
+                        <a href="/about">About Us</a>
                     </section>
                     <section className='text-sm'>
-                        <a href="/account">Contact Us</a>
+                        <a href="/contact">Contact Us</a>
                     </section>
                 </div>
             </div>
@@ -101,7 +106,11 @@ const Header = () => {
                                     onChange={handleInputChange}
                                     onFocus={handleInputFocus}
                                     placeholder="Search products..."
-                                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                    autoComplete="off"
+                                    autoCorrect="off"
+                                    autoCapitalize="off"
+                                    spellCheck="false"
                                 />
                                 <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
                                     <FiSearch size={18} />
@@ -119,7 +128,6 @@ const Header = () => {
                             <li><a className="block py-3" href="/products">Shop</a></li>
                             <li><a className="block py-3" href="/categories">Categories</a></li>
                             <li><a className="block py-3" href="/contact">Contact Us</a></li>
-                            <li><a className="block py-3" href="/how-we-work">How We Work</a></li>
                             <li>
                                 {isAuthenticated ? (
                                     <div className="py-3">
@@ -150,16 +158,16 @@ const Header = () => {
                     <a href="/">
                         <Image src={logo} alt="logo" width={133} height={70} />
                     </a>
-                    <div className="flex justify-between items-center gap-4">
+                    <div className="flex justify-between items-center gap-4 text-[#2862AD] font-medium">
                         <p>
-                            <a href="/products">Shop Now</a>
+                            <a href="/products" className='hover:text-[#EF6A22] transition-all duration-300 font-semibold'>Shop Now</a>
                         </p>
                         <p>
-                            <a href="/categories">Categories</a>
+                            <a href="/categories" className='hover:text-[#EF6A22] transition-all duration-300 font-semibold'>Categories</a>
                         </p>
                     </div>
                 </div>
-                <div className="flex-1 px-6">
+                <div className="flex-1 px-2 sm:px-6">
                     <div className="relative max-w-xl mx-auto w-full">
                         <form onSubmit={handleSearch} className="relative">
                             <label htmlFor="site-search" className="sr-only">Search</label>
@@ -170,7 +178,11 @@ const Header = () => {
                                 onChange={handleInputChange}
                                 onFocus={handleInputFocus}
                                 placeholder="Search products..."
-                                className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22]"
+                                className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                autoComplete="off"
+                                autoCorrect="off"
+                                autoCapitalize="off"
+                                spellCheck="false"
                             />
                             <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#EF6A22]" aria-label="Search">
                                 <FiSearch size={18} />

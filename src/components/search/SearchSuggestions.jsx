@@ -12,7 +12,12 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
 
     useEffect(() => {
         if (searchQuery && searchQuery.length >= 2) {
-            fetchSuggestions(searchQuery)
+            // Debounce the search to prevent too many API calls
+            const timeoutId = setTimeout(() => {
+                fetchSuggestions(searchQuery)
+            }, 300)
+
+            return () => clearTimeout(timeoutId)
         } else {
             setSuggestions([])
         }
@@ -25,23 +30,49 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
             }
         }
 
+        const handleTouchOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                onClose()
+            }
+        }
+
         document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
+        document.addEventListener('touchstart', handleTouchOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('touchstart', handleTouchOutside)
+        }
     }, [onClose])
 
     const fetchSuggestions = async (query) => {
         setLoading(true)
         try {
             const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api'
-            const response = await fetch(`${baseUrl}/products/list?search=${encodeURIComponent(query)}&limit=5`)
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+
+            const response = await fetch(`${baseUrl}/products/list?search=${encodeURIComponent(query)}&limit=5`, {
+                signal: controller.signal
+            })
+
+            clearTimeout(timeoutId)
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
             const data = await response.json()
 
             if (data.success) {
                 const products = data.data.products || []
                 setSuggestions(products.slice(0, 5)) // Limit to 5 suggestions
+            } else {
+                setSuggestions([])
             }
         } catch (error) {
-            console.error('Error fetching suggestions:', error)
+            if (error.name !== 'AbortError') {
+                console.error('Error fetching suggestions:', error)
+            }
             setSuggestions([])
         } finally {
             setLoading(false)
@@ -93,7 +124,7 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
     return (
         <div
             ref={containerRef}
-            className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-1"
+            className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg z-[9999] mt-1 max-h-80 overflow-y-auto"
         >
             {loading ? (
                 <div className="p-3 text-center text-gray-500">
@@ -105,7 +136,11 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
                         <button
                             key={product.productID}
                             onClick={() => handleSuggestionClick(product)}
-                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-3 ${index === selectedIndex ? 'bg-gray-50' : ''
+                            onTouchEnd={(e) => {
+                                e.preventDefault()
+                                handleSuggestionClick(product)
+                            }}
+                            className={`w-full text-left px-3 py-2 hover:bg-gray-50 active:bg-gray-100 flex items-center gap-3 transition-colors duration-150 ${index === selectedIndex ? 'bg-gray-50' : ''
                                 }`}
                         >
                             <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
@@ -132,7 +167,11 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
                     <div className="border-t border-gray-100">
                         <button
                             onClick={() => onSelect(searchQuery)}
-                            className="w-full text-left px-3 py-2 text-sm text-[#EF6A22] hover:bg-gray-50"
+                            onTouchEnd={(e) => {
+                                e.preventDefault()
+                                onSelect(searchQuery)
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-[#EF6A22] hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150"
                         >
                             Search for "{searchQuery}"
                         </button>
