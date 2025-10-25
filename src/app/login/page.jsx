@@ -13,53 +13,101 @@ export default function LoginPage() {
     const [error, setError] = useState('')
 
     // Clear error when user starts typing
+    // useEffect(() => {
+    //     if (error) {
+    //         setError('')
+    //     }
+    // }, [emailID, password])
+
+    // Debug: Log error state changes
     useEffect(() => {
-        if (error) {
-            setError('')
-        }
-    }, [emailID, password])
+        console.log('Error state changed:', error)
+    }, [error])
 
-    // Handle Enter key press
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            onSubmit(e)
-        }
-    }
 
-    const onSubmit = async (e) => {
+
+
+    const handleLogin = async (e) => {
         e?.preventDefault?.()
+        e?.stopPropagation?.()
+
         if (loading) return
+
+        // Basic validation
+        if (!emailID.trim()) {
+            setError('Please enter your email address')
+            return
+        }
+
+        if (!password.trim()) {
+            setError('Please enter your password')
+            return
+        }
+
         setError('')
         setLoading(true)
+
         try {
-            const { data } = await api.post('/auth/login/user', { emailID, password, device: 'web' })
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
+            const { data } = await fetch(`${apiBase}/auth/login/user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    emailID: emailID.trim(),
+                    password,
+                    device: 'web',
+                }),
+            }).then(res => {
+                if (!res.ok) {
+                    return res.json().then(err => { throw { response: { data: err } }; });
+                }
+                return res.json();
+            });
+
             const accessToken = data?.tokens?.accessToken
             const refreshToken = data?.tokens?.refreshToken
             const uid = data?.user?.uid
 
-            if (!accessToken || !refreshToken || !uid) throw new Error('Invalid response from server')
+            if (!accessToken || !refreshToken || !uid) {
+                throw new Error('Invalid response from server')
+            }
 
             // Set authentication tokens and user ID as cookies
             setAuthTokens(accessToken, refreshToken)
             setUserId(uid)
             router.push('/account')
+
         } catch (err) {
             const errorMessage = err?.response?.data?.message || err?.message || 'Login failed'
+            console.log('Login error:', errorMessage)
 
-            // Handle approval pending specifically
+            // Handle specific error cases
             if (errorMessage.includes('pending approval') || errorMessage.includes('pending admin approval')) {
-                setError('⏳ Your account is pending approval. Please wait for admin approval before logging in.')
+                const errorText = '⏳ Your account is pending approval. Please wait for admin approval before logging in.'
+                console.log('Setting error:', errorText)
+                setError(errorText)
+                console.log('Error state after setError:', errorText)
                 toast.error('Account pending approval. Please wait for admin approval.')
-                // Clear password field to prevent saving
                 setPassword('')
             } else if (errorMessage.includes('rejected')) {
-                setError('❌ Your account has been rejected. Please contact support for assistance.')
+                const errorText = '❌ Your account has been rejected. Please contact support for assistance.'
+                console.log('Setting error:', errorText)
+                setError(errorText)
+                console.log('Error state after setError:', errorText)
                 toast.error('Account rejected. Please contact support.')
-                // Clear password field to prevent saving
+                setPassword('')
+            } else if (errorMessage.includes('Invalid email or password')) {
+                const errorText = '❌ Invalid email or password. Please check your credentials and try again.'
+                console.log('Setting error:', errorText)
+                setError(errorText)
+                console.log('Error state after setError:', errorText)
+                toast.error('Invalid email or password')
                 setPassword('')
             } else {
-                setError(errorMessage)
+                const errorText = `❌ ${errorMessage}`
+                console.log('Setting error:', errorText)
+                setError(errorText)
+                console.log('Error state after setError:', errorText)
                 toast.error(errorMessage)
             }
         } finally {
@@ -67,30 +115,47 @@ export default function LoginPage() {
         }
     }
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            e.stopPropagation()
+            handleLogin(e)
+        }
+    }
+
+    // Test function to check error display
+    // const testError = () => {
+    //     console.log('Test error button clicked')
+    //     setError('This is a test error message to check if error display works')
+    //     console.log('Error state set to:', 'This is a test error message to check if error display works')
+    // }
+
     return (
         <div className="min-h-[70vh] grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10">
             <div className="w-full max-w-md bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm">
+                {/* Header */}
                 <div className="px-7 pt-7 pb-2">
                     <h1 className="text-2xl font-semibold text-gray-900">Welcome back</h1>
                     <p className="text-sm text-gray-500">Sign in to continue</p>
                 </div>
+
+                {/* Login Container */}
                 <div className="px-7 pb-7 space-y-4">
+                    {/* Test Button - Remove after testing */}
+
+                    {/* Error Message */}
                     {error && (
-                        <div className={`text-sm rounded-lg px-4 py-3 border animate-pulse ${error.includes('pending approval')
+                        <div className={`text-sm rounded-lg px-4 py-3 border ${error.includes('pending approval')
                             ? 'text-amber-800 bg-amber-50 border-amber-300 shadow-md'
                             : error.includes('rejected')
                                 ? 'text-red-800 bg-red-50 border-red-300 shadow-md'
-                                : 'text-red-600 bg-red-50 border-red-200'
+                                : 'text-red-800 bg-red-50 border-red-300 shadow-md'
                             }`}>
                             <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0 mt-0.5">
                                     {error.includes('pending approval') ? (
                                         <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    ) : error.includes('rejected') ? (
-                                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     ) : (
                                         <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,46 +184,63 @@ export default function LoginPage() {
                             </div>
                         </div>
                     )}
+
+                    {/* Email Input */}
                     <div className="space-y-1">
-                        <label className="block text-sm text-gray-600">Email</label>
+                        <label className="block text-sm text-gray-600">Email Address</label>
                         <input
-                            type='text'
                             value={emailID}
                             onChange={(e) => setEmail(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            required
-                            placeholder='name@example.com'
-                            autoComplete="off"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                            placeholder='Enter your email address'
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
                         />
                     </div>
+
+                    {/* Password Input */}
                     <div className="space-y-1">
                         <label className="block text-sm text-gray-600">Password</label>
                         <input
-                            type='password'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            required
-                            placeholder='********'
-                            autoComplete="new-password"
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                            placeholder='Enter your password'
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
                         />
                     </div>
-                    <button
-                        type="button"
-                        onClick={onSubmit}
-                        disabled={loading}
-                        className="w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 rounded-lg bg-[#EF6A22] text-white font-medium hover:opacity-90 transition disabled:opacity-60"
+
+                    {/* Login Button */}
+                    <div
+                        onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (!loading) {
+                                handleLogin(e)
+                            }
+                            return false
+                        }}
+                        className={`w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 rounded-lg text-white font-medium transition ${loading
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-[#EF6A22] hover:opacity-90 cursor-pointer'
+                            }`}
                     >
                         {loading ? 'Logging in…' : 'Login'}
-                    </button>
-                    <p className="text-md text-gray-500 text-center font-semibold ">Dont Have Account? Click here to <a href="/signup" className="text-blue-600 hover:text-blue-800 font-medium">Sign up</a></p>
-                    <div className="text-xs text-gray-500 text-center">By continuing, you agree to our terms and privacy policy.</div>
+                    </div>
+
+                    {/* Sign Up Link */}
+                    <p className="text-md text-gray-500 text-center font-semibold">
+                        Don't have an account? Click here to{' '}
+                        <a href="/signup" className="text-blue-600 hover:text-blue-800 font-medium">
+                            Sign up
+                        </a>
+                    </p>
+
+                    {/* Terms */}
+                    <div className="text-xs text-gray-500 text-center">
+                        By continuing, you agree to our terms and privacy policy.
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
-
-
