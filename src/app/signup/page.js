@@ -17,10 +17,21 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+
+        // For phone number, only allow digits and limit to 10 characters
+        if (name === 'phoneNumber') {
+            const numericValue = value.replace(/\D/g, '').slice(0, 10);
+            setFormData({
+                ...formData,
+                [name]: numericValue
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value
+            });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -34,6 +45,13 @@ export default function Signup() {
 
         if (formData.password.length < 6) {
             toast.error('Password must be at least 6 characters long');
+            return;
+        }
+
+        // Mobile number validation - must be exactly 10 digits
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(formData.phoneNumber)) {
+            toast.error('Phone number must be exactly 10 digits');
             return;
         }
 

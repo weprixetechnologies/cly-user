@@ -33,7 +33,7 @@ export default function AccountPage() {
                 setLoading(true);
                 const [uRes, oRes, aRes] = await Promise.all([
                     api.get(`/users/${uid}`),
-                    api.get(`/order/user/${uid}/orders`),
+                    api.get(`/order/user/${uid}/orders/detailed`),
                     getUserAddresses().catch(() => ({ data: [] })) // Handle addresses gracefully
                 ]);
                 const u = uRes?.data?.user || null;
@@ -168,8 +168,14 @@ export default function AccountPage() {
                                         </div>
                                         <div className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleString()}</div>
                                         <div className="mt-2 text-sm text-gray-700">{o.productName} — Box {o.boxQty}, Units {o.units}</div>
+                                        {o.remarks && (
+                                            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                <div className="text-xs font-medium text-blue-800 mb-1">Admin Remarks:</div>
+                                                <div className="text-sm text-blue-700 whitespace-pre-wrap">{o.remarks}</div>
+                                            </div>
+                                        )}
                                         <div className="mt-2 flex items-center justify-between">
-                                            <div className="text-sm font-semibold text-gray-900">Amount: ₹{o.order_amount || '0.00'}</div>
+                                            <div className="text-sm font-semibold text-gray-900">Amount: ₹{o.productPrice * o.units || '0.00'}</div>
                                             <a href={`/order-success/order-summary/${o.orderID}`} className="text-xs underline text-[#EF6A22]">View summary</a>
                                         </div>
                                     </div>

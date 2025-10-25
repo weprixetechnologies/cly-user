@@ -12,11 +12,13 @@ export default function ProductDetail({ params }) {
     const [minQty, setMinQty] = useState(1);
     const [selectedImage, setSelectedImage] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isEditingQuantity, setIsEditingQuantity] = useState(false);
+    const [inputQuantity, setInputQuantity] = useState('');
 
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`http://72.60.219.181:3300/api/products/${productID}`);
+                const response = await fetch(`http://localhost:3300/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
                 console.log(data.data.minQty);
@@ -38,11 +40,49 @@ export default function ProductDetail({ params }) {
 
     // Helper functions for quantity management
     const incrementQuantity = () => {
-        setQuantity(prev => prev + minQty);
+        if (!isEditingQuantity) {
+            setQuantity(prev => prev + minQty);
+        }
     };
 
     const decrementQuantity = () => {
-        setQuantity(prev => Math.max(minQty, prev - minQty));
+        if (!isEditingQuantity) {
+            setQuantity(prev => Math.max(minQty, prev - minQty));
+        }
+    };
+
+    // Function to round input to nearest multiple of minQty
+    const roundToMinQtyMultiple = (value) => {
+        const numValue = parseInt(value) || 0;
+        if (numValue <= 0) return minQty;
+        const rounded = Math.round(numValue / minQty) * minQty;
+        return Math.max(minQty, rounded); // Ensure it's at least minQty
+    };
+
+    // Handle quantity editing
+    const handleQuantityClick = () => {
+        setIsEditingQuantity(true);
+        setInputQuantity(quantity.toString());
+    };
+
+    const handleQuantityChange = (e) => {
+        setInputQuantity(e.target.value);
+    };
+
+    const handleQuantityBlur = () => {
+        const roundedValue = roundToMinQtyMultiple(inputQuantity);
+        setQuantity(roundedValue);
+        setIsEditingQuantity(false);
+        setInputQuantity('');
+    };
+
+    const handleQuantityKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleQuantityBlur();
+        } else if (e.key === 'Escape') {
+            setIsEditingQuantity(false);
+            setInputQuantity('');
+        }
     };
 
     const addToCart = async () => {
@@ -65,7 +105,7 @@ export default function ProductDetail({ params }) {
             alert('Added to cart');
         } catch (error) {
             console.error('Error adding to cart:', error);
-            alert('Failed to add to cart. Please try again.');
+            alert('Please Login to Add To Cart');
         }
     };
 
@@ -180,20 +220,41 @@ export default function ProductDetail({ params }) {
                             <div className='inline-flex items-center border border-gray-300 rounded-full overflow-hidden'>
                                 <button
                                     onClick={decrementQuantity}
-                                    disabled={quantity <= minQty}
-                                    className={`px-4 py-2 transition-colors ${quantity <= minQty
+                                    disabled={quantity <= minQty || isEditingQuantity}
+                                    className={`px-4 py-2 transition-colors ${quantity <= minQty || isEditingQuantity
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         }`}
                                 >
                                     –
                                 </button>
-                                <div className='min-w-[56px] text-center font-bold text-gray-900 px-4 py-2'>
-                                    {quantity}
-                                </div>
+                                {isEditingQuantity ? (
+                                    <input
+                                        type="number"
+                                        value={inputQuantity}
+                                        onChange={handleQuantityChange}
+                                        onBlur={handleQuantityBlur}
+                                        onKeyDown={handleQuantityKeyDown}
+                                        className='min-w-[56px] text-center font-bold text-gray-900 px-4 py-2 border-none outline-none bg-transparent'
+                                        autoFocus
+                                        min={minQty}
+                                    />
+                                ) : (
+                                    <div
+                                        className='min-w-[56px] text-center font-bold text-gray-900 px-4 py-2 cursor-pointer hover:bg-gray-50 hover:border hover:border-gray-300 transition-colors rounded-sm'
+                                        onClick={handleQuantityClick}
+                                        title="Click to edit quantity"
+                                    >
+                                        {quantity}
+                                    </div>
+                                )}
                                 <button
                                     onClick={incrementQuantity}
-                                    className='px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition-colors'
+                                    disabled={isEditingQuantity}
+                                    className={`px-4 py-2 transition-colors ${isEditingQuantity
+                                        ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                                        : 'bg-gray-900 text-white hover:bg-gray-800'
+                                        }`}
                                 >
                                     +
                                 </button>

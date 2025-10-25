@@ -1,16 +1,15 @@
 import axios from 'axios';
-import { getCookie, setCookie } from './cookieUtil';
+import { getCookie, setCookie, clearAuthTokens } from './cookieUtil';
 
 const redirectToLogin = () => {
     console.log('[redirectToLogin] Clearing cookies and redirecting to login');
-    document.cookie = '_at=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = '_rt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    clearAuthTokens(); // Use the proper cookie clearing function
 
     // Full page reload — no SPA history
     window.location.href = '/login';
 };
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
+const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api';
 
 const axiosInstance = axios.create({
     baseURL,
@@ -57,8 +56,19 @@ axiosInstance.interceptors.response.use(
         const originalRequest = error.config;
         console.log('[Response interceptor] Error:', error.response?.status, originalRequest?.url);
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            console.log('[Response interceptor] 401 Unauthorized detected');
+        // Handle authentication errors (401) and forbidden errors (403) that might indicate auth issues
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+            console.log('[Response interceptor] 401/403 Unauthorized/Forbidden detected');
+
+            // Check if user has any authentication tokens at all
+            const accessToken = getCookie('_at');
+            const refreshToken = getCookie('_rt');
+
+            if (!accessToken && !refreshToken) {
+                console.log('[Response interceptor] No authentication tokens found, redirecting to login');
+                redirectToLogin();
+                return Promise.reject(error);
+            }
 
             if (isRefreshing) {
                 console.log('[Response interceptor] Refresh already in progress, queuing request');
@@ -75,7 +85,6 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
             console.log('[Response interceptor] Starting token refresh');
 
-            const refreshToken = getCookie('_rt');
             console.log('[Response interceptor] Refresh token:', refreshToken ? '[present]' : '[not present]');
 
             if (!refreshToken) {
@@ -84,15 +93,34 @@ axiosInstance.interceptors.response.use(
                 return Promise.reject(error);
             }
 
+            // Check if this is a refresh token request that failed - avoid infinite loop
+            if (originalRequest.url?.includes('/auth/refresh-token')) {
+                console.log('[Response interceptor] Refresh token request failed, redirecting to login');
+                redirectToLogin();
+                return Promise.reject(error);
+            }
+
             try {
+                console.log('[Response interceptor] Attempting token refresh...');
                 const { data } = await axios.post(
                     '/auth/refresh-token',
                     { refreshToken },
-                    { baseURL: axiosInstance.defaults.baseURL }
+                    {
+                        baseURL: axiosInstance.defaults.baseURL,
+                        timeout: 10000 // 10 second timeout
+                    }
                 );
 
+                console.log('[Response interceptor] Refresh response:', data);
+
+                // Check if refresh was successful
+                if (!data.success) {
+                    console.log('[Response interceptor] Refresh failed - server returned success: false');
+                    redirectToLogin();
+                    return Promise.reject(error);
+                }
+
                 const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data;
-                console.log(newAccessToken);
 
                 if (!newAccessToken || !newRefreshToken) {
                     console.log('[Response interceptor] Refresh response missing tokens, redirecting to login');
@@ -113,7 +141,21 @@ axiosInstance.interceptors.response.use(
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
                 isRefreshing = false;
-                console.log('[Response interceptor] Token refresh failed, redirecting to login', refreshError);
+                console.log('[Response interceptor] Token refresh failed:', refreshError.response?.status, refreshError.message);
+
+                // Handle different types of refresh errors
+                if (refreshError.response?.status === 401 || refreshError.response?.status === 403) {
+                    console.log('[Response interceptor] Refresh token invalid/expired, redirecting to login');
+                } else if (refreshError.response?.status >= 400) {
+                    console.log('[Response interceptor] Refresh endpoint returned error, redirecting to login');
+                } else if (refreshError.code === 'ECONNABORTED' || refreshError.message?.includes('timeout')) {
+                    console.log('[Response interceptor] Refresh request timed out, redirecting to login');
+                } else if (!refreshError.response) {
+                    console.log('[Response interceptor] Network error during refresh, redirecting to login');
+                } else {
+                    console.log('[Response interceptor] Unknown error during refresh, redirecting to login');
+                }
+
                 redirectToLogin();
                 return Promise.reject(refreshError);
             }

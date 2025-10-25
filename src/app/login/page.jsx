@@ -29,7 +29,12 @@ export default function LoginPage() {
             setUserId(uid)
             router.push('/account')
         } catch (err) {
-            setError(err?.response?.data?.message || err?.message || 'Login failed')
+            const errorMessage = err?.response?.data?.message || err?.message || 'Login failed'
+            if (errorMessage.includes('pending approval')) {
+                setError('Account Approval Pending with Admin')
+            } else {
+                setError(errorMessage)
+            }
         } finally {
             setLoading(false)
         }
