@@ -60,8 +60,8 @@ export default async function Home() {
       {/* <div className="md:px-15 px-4">
         <ProductGrid initialLimit={8} maxTotal={8} />
       </div>
-      <div className="h-7"></div>
-      <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} /> */}
+      <div className="h-7"></div> */}
+      <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
       <div className="md:px-15 px-4">

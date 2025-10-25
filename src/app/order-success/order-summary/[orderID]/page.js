@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function OrderSummary({ params }) {
     const { orderID } = use(params);
-    const [data, setData] = useState({ items: [], info: null });
+    const [data, setData] = useState({ items: [], info: null, payments: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -14,10 +14,15 @@ export default function OrderSummary({ params }) {
         async function load() {
             try {
                 setLoading(true);
-                const res = await axiosInstance.get(`/order/user/${orderID}`);
-                if (!res?.data?.success) throw new Error(res?.data?.message || 'Failed to fetch order');
-                const rows = res?.data?.data || [];
-                setData({ items: rows, info: rows[0] || null });
+                const [orderRes, paymentRes] = await Promise.all([
+                    axiosInstance.get(`/order/user/${orderID}`),
+                    axiosInstance.get(`/order/user/${orderID}/payment`).catch(() => ({ data: { data: [] } }))
+                ]);
+
+                if (!orderRes?.data?.success) throw new Error(orderRes?.data?.message || 'Failed to fetch order');
+                const rows = orderRes?.data?.data || [];
+                const payments = paymentRes?.data?.data || [];
+                setData({ items: rows, info: rows[0] || null, payments });
             } catch (e) {
                 setError(e?.response?.data?.message || e?.message || 'Failed to fetch order');
             } finally { setLoading(false); }
@@ -58,6 +63,10 @@ export default function OrderSummary({ params }) {
     }, 0);
 
     const total = subtotal; // No delivery fee
+
+    // Calculate payment totals
+    const totalPaid = data.payments.reduce((sum, payment) => sum + Number(payment.paid_amount || 0), 0);
+    const remainingAmount = total - totalPaid;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -209,6 +218,16 @@ export default function OrderSummary({ params }) {
                                     <span className="text-slate-600">Subtotal</span>
                                     <span className="font-semibold text-slate-900">₹{subtotal.toFixed(2)}</span>
                                 </div>
+                                <div className="flex justify-between items-center py-2">
+                                    <span className="text-slate-600">Amount Paid</span>
+                                    <span className="font-semibold text-green-600">₹{totalPaid.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2">
+                                    <span className="text-slate-600">Remaining</span>
+                                    <span className={`font-semibold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                                        ₹{remainingAmount.toFixed(2)}
+                                    </span>
+                                </div>
                                 <div className="border-t border-slate-200 pt-3">
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-bold text-slate-900">Total Amount</span>
@@ -266,6 +285,70 @@ export default function OrderSummary({ params }) {
                                     <div className="text-slate-600">
                                         {info.addressCity}, {info.addressState} - {info.addressPincode}
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Payment Transactions */}
+                        {data.payments && data.payments.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    Payment History
+                                </h3>
+                                <div className="space-y-3">
+                                    {data.payments.map((payment, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-slate-900">₹{Number(payment.paid_amount).toFixed(2)}</div>
+                                                        <div className="text-sm text-slate-600">
+                                                            {new Date(payment.createdAt).toLocaleDateString('en-IN', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </div>
+                                                        {payment.notes && (
+                                                            <div className="text-xs text-slate-500 mt-1">{payment.notes}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-slate-500">
+                                                Admin: {payment.admin_uid || 'System'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Order Remarks */}
+                        {info.remarks && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                    </div>
+                                    Admin Remarks
+                                </h3>
+                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div className="text-sm text-blue-800 whitespace-pre-wrap">{info.remarks}</div>
                                 </div>
                             </div>
                         )}

@@ -87,9 +87,10 @@ const RefundPolicyPage = () => {
                     {/* Content */}
                     <div className="px-8 py-12">
                         <div className="prose prose-lg max-w-none">
-                            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                                {policy.content}
-                            </div>
+                            <div
+                                className="text-gray-700 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: policy.content }}
+                            />
                         </div>
 
                         {/* Footer */}

@@ -27,7 +27,7 @@ const TermsAndConditionsPage = () => {
     };
 
     if (loading) {
-    return (
+        return (
             <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 flex items-center justify-center">
                 <div className="text-center">
                     <ClipLoader color="#EF6A22" size={50} />
@@ -87,9 +87,10 @@ const TermsAndConditionsPage = () => {
                     {/* Content */}
                     <div className="px-8 py-12">
                         <div className="prose prose-lg max-w-none">
-                            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                                {policy.content}
-                            </div>
+                            <div
+                                className="text-gray-700 leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: policy.content }}
+                            />
                         </div>
 
                         {/* Footer */}
