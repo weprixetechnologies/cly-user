@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'react-toastify'
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
@@ -240,5 +240,34 @@ export default function ResetPasswordPage() {
                 </form>
             </div>
         </div>
+    )
+}
+
+// Loading component for Suspense fallback
+function ResetPasswordLoading() {
+    return (
+        <div className="min-h-[70vh] grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10">
+            <div className="w-full max-w-md bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm">
+                <div className="px-7 pt-7 pb-7 text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="animate-spin w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <h1 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h1>
+                    <p className="text-sm text-gray-500">Please wait while we load the reset page...</p>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// Main component with Suspense wrapper
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<ResetPasswordLoading />}>
+            <ResetPasswordContent />
+        </Suspense>
     )
 }
