@@ -248,6 +248,16 @@ export default function LoginPage() {
                         {loading ? 'Logging in…' : 'Login'}
                     </div>
 
+                    {/* Forgot Password Link */}
+                    <div className="text-center">
+                        <a
+                            href="/forgot-password"
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                            Forgot your password?
+                        </a>
+                    </div>
+
                     {/* Sign Up Link */}
                     <p className="text-md text-gray-500 text-center font-semibold">
                         Don't have an account? Click here to{' '}

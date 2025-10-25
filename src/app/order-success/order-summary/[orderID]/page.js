@@ -22,6 +22,9 @@ export default function OrderSummary({ params }) {
                 if (!orderRes?.data?.success) throw new Error(orderRes?.data?.message || 'Failed to fetch order');
                 const rows = orderRes?.data?.data || [];
                 const payments = paymentRes?.data?.data || [];
+                console.log('Order data:', rows);
+                console.log('Payment data:', payments);
+                console.log('Payment response:', paymentRes?.data);
                 setData({ items: rows, info: rows[0] || null, payments });
             } catch (e) {
                 setError(e?.response?.data?.message || e?.message || 'Failed to fetch order');
@@ -67,6 +70,13 @@ export default function OrderSummary({ params }) {
     // Calculate payment totals
     const totalPaid = data.payments.reduce((sum, payment) => sum + Number(payment.paid_amount || 0), 0);
     const remainingAmount = total - totalPaid;
+
+    console.log('Payment calculations:', {
+        payments: data.payments,
+        totalPaid,
+        remainingAmount,
+        total
+    });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -199,6 +209,53 @@ export default function OrderSummary({ params }) {
                                 })}
                             </div>
                         </div>
+                        {/* Payment Transactions */}
+                        {data.payments && data.payments.length > 0 && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    Payment History
+                                </h3>
+                                <div className="space-y-3">
+                                    {data.payments.map((payment, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-slate-900">₹{Number(payment.paid_amount).toFixed(2)}</div>
+                                                        <div className="text-sm text-slate-600">
+                                                            {new Date(payment.createdAt).toLocaleDateString('en-IN', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </div>
+                                                        {payment.notes && (
+                                                            <div className="text-xs text-slate-500 mt-1">{payment.notes}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-slate-500">
+                                                Admin: {payment.admin_uid || 'System'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
 
                     {/* Sidebar */}
@@ -220,7 +277,12 @@ export default function OrderSummary({ params }) {
                                 </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-slate-600">Amount Paid</span>
-                                    <span className="font-semibold text-green-600">₹{totalPaid.toFixed(2)}</span>
+                                    <span className="font-semibold text-green-600">
+                                        ₹{totalPaid.toFixed(2)}
+                                        {data.payments.length === 0 && (
+                                            <span className="text-xs text-slate-400 ml-2">(No payments recorded)</span>
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-slate-600">Remaining</span>
@@ -289,52 +351,16 @@ export default function OrderSummary({ params }) {
                             </div>
                         )}
 
-                        {/* Payment Transactions */}
-                        {data.payments && data.payments.length > 0 && (
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    Payment History
-                                </h3>
-                                <div className="space-y-3">
-                                    {data.payments.map((payment, index) => (
-                                        <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-semibold text-slate-900">₹{Number(payment.paid_amount).toFixed(2)}</div>
-                                                        <div className="text-sm text-slate-600">
-                                                            {new Date(payment.createdAt).toLocaleDateString('en-IN', {
-                                                                year: 'numeric',
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
-                                                        </div>
-                                                        {payment.notes && (
-                                                            <div className="text-xs text-slate-500 mt-1">{payment.notes}</div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="text-xs text-slate-500">
-                                                Admin: {payment.admin_uid || 'System'}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* Debug Payment Data */}
+                        {/* <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <h4 className="font-semibold text-yellow-800 mb-2">Debug: Payment Data</h4>
+                            <div className="text-xs text-yellow-700">
+                                <div>Payments array length: {data.payments.length}</div>
+                                <div>Total paid: ₹{totalPaid.toFixed(2)}</div>
+                                <div>Raw payments data: {JSON.stringify(data.payments, null, 2)}</div>
                             </div>
-                        )}
+                        </div> */}
+
 
                         {/* Order Remarks */}
                         {info.remarks && (
