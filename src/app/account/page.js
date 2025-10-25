@@ -160,26 +160,87 @@ export default function AccountPage() {
                                 {orders.length === 0 && (
                                     <div className="text-gray-500">No orders yet.</div>
                                 )}
-                                {orders.map((o) => (
-                                    <div key={`${o.orderID}-${o.productID}`} className="border rounded-xl p-4 hover:shadow-sm transition bg-white">
-                                        <div className="flex items-center justify-between">
-                                            <div className="font-medium text-gray-900">Order {o.orderID}</div>
-                                            <div className="text-xs px-2 py-1 rounded-full bg-orange-50 text-[#EF6A22] border border-orange-200">{o.orderStatus}</div>
-                                        </div>
-                                        <div className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleString()}</div>
-                                        <div className="mt-2 text-sm text-gray-700">{o.productName} — Box {o.boxQty}, Units {o.units}</div>
-                                        {o.remarks && (
-                                            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                                <div className="text-xs font-medium text-blue-800 mb-1">Admin Remarks:</div>
-                                                <div className="text-sm text-blue-700 whitespace-pre-wrap">{o.remarks}</div>
+                                {(() => {
+                                    // Group orders by orderID
+                                    const groupedOrders = orders.reduce((acc, order) => {
+                                        if (!acc[order.orderID]) {
+                                            acc[order.orderID] = {
+                                                orderID: order.orderID,
+                                                orderStatus: order.orderStatus,
+                                                createdAt: order.createdAt,
+                                                remarks: order.remarks,
+                                                items: []
+                                            };
+                                        }
+                                        acc[order.orderID].items.push(order);
+                                        return acc;
+                                    }, {});
+
+                                    // Convert to array and sort by creation date
+                                    const orderGroups = Object.values(groupedOrders).sort((a, b) =>
+                                        new Date(b.createdAt) - new Date(a.createdAt)
+                                    );
+
+                                    return orderGroups.map((orderGroup) => (
+                                        <div key={orderGroup.orderID} className="border rounded-xl p-4 hover:shadow-sm transition bg-white mb-4">
+                                            {/* Order Header */}
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="font-medium text-gray-900">Order {orderGroup.orderID}</div>
+                                                <div className="text-xs px-2 py-1 rounded-full bg-orange-50 text-[#EF6A22] border border-orange-200">
+                                                    {orderGroup.orderStatus}
+                                                </div>
                                             </div>
-                                        )}
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <div className="text-sm font-semibold text-gray-900">Amount: ₹{o.productPrice * o.units || '0.00'}</div>
-                                            <a href={`/order-success/order-summary/${o.orderID}`} className="text-xs underline text-[#EF6A22]">View summary</a>
+                                            <div className="text-xs text-gray-500 mb-3">
+                                                {new Date(orderGroup.createdAt).toLocaleString()}
+                                            </div>
+
+                                            {/* Order Items */}
+                                            <div className="space-y-2 mb-3">
+                                                {orderGroup.items.map((item, index) => (
+                                                    <div key={`${item.orderID}-${item.productID}`} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                                                        <div className="flex-1">
+                                                            <div className="text-sm font-medium text-gray-900">{item.productName}</div>
+                                                            <div className="text-xs text-gray-600">
+                                                                Box: {item.boxQty || 0}, Units: {item.units || 0}
+                                                                {item.accepted_units !== undefined && item.accepted_units !== item.units && (
+                                                                    <span className="ml-2 text-orange-600">
+                                                                        (Accepted: {item.accepted_units})
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            ₹{((item.pItemPrice || item.productPrice || 0) * (item.units || 0)).toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Order Total */}
+                                            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                                                <div className="text-sm font-semibold text-gray-900">
+                                                    Total: ₹{orderGroup.items.reduce((sum, item) =>
+                                                        sum + ((item.pItemPrice || item.productPrice || 0) * (item.units || 0)), 0
+                                                    ).toFixed(2)}
+                                                </div>
+                                                <a
+                                                    href={`/order-success/order-summary/${orderGroup.orderID}`}
+                                                    className="text-xs underline text-[#EF6A22] hover:text-orange-700"
+                                                >
+                                                    View summary
+                                                </a>
+                                            </div>
+
+                                            {/* Admin Remarks */}
+                                            {orderGroup.remarks && (
+                                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                    <div className="text-xs font-medium text-blue-800 mb-1">Admin Remarks:</div>
+                                                    <div className="text-sm text-blue-700 whitespace-pre-wrap">{orderGroup.remarks}</div>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                ))}
+                                    ));
+                                })()}
                             </section>
                         )}
 
