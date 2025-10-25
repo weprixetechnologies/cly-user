@@ -49,7 +49,9 @@ export default function LoginPage() {
 
         try {
             const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api';
-            const { data } = await fetch(`${apiBase}/auth/login/user`, {
+            console.log('Attempting login with:', { emailID: emailID.trim(), device: 'web' });
+
+            const response = await fetch(`${apiBase}/auth/login/user`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -57,25 +59,44 @@ export default function LoginPage() {
                     password,
                     device: 'web',
                 }),
-            }).then(res => {
-                if (!res.ok) {
-                    return res.json().then(err => { throw { response: { data: err } }; });
-                }
-                return res.json();
             });
+
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log('Error response:', errorData);
+                throw { response: { data: errorData } };
+            }
+
+            const data = await response.json();
+            console.log('Success response:', data);
 
             const accessToken = data?.tokens?.accessToken
             const refreshToken = data?.tokens?.refreshToken
             const uid = data?.user?.uid
 
+            console.log('Extracted tokens:', { accessToken: !!accessToken, refreshToken: !!refreshToken, uid });
+
             if (!accessToken || !refreshToken || !uid) {
+                console.log('Missing required fields:', { accessToken: !!accessToken, refreshToken: !!refreshToken, uid });
                 throw new Error('Invalid response from server')
             }
 
             // Set authentication tokens and user ID as cookies
+            console.log('Setting auth tokens and redirecting...');
             setAuthTokens(accessToken, refreshToken)
             setUserId(uid)
-            router.push('/account')
+
+            // Clear any existing errors and show success
+            setError('')
+            toast.success('Login successful! Redirecting...')
+
+            // Small delay to show success message
+            setTimeout(() => {
+                router.push('/account')
+            }, 500)
 
         } catch (err) {
             const errorMessage = err?.response?.data?.message || err?.message || 'Login failed'

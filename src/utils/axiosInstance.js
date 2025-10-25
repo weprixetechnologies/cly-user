@@ -58,7 +58,7 @@ axiosInstance.interceptors.response.use(
 
         // Handle authentication errors (401) and forbidden errors (403) that might indicate auth issues
         if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
-            console.log('[Response interceptor] 401/403 Unauthorized/Forbidden detected');
+            console.log('[Response interceptor] 401/403 Unauthorized/Forbidden detected - Status:', error.response?.status);
 
             // Check if user has any authentication tokens at all
             const accessToken = getCookie('_at');
@@ -68,6 +68,13 @@ axiosInstance.interceptors.response.use(
                 console.log('[Response interceptor] No authentication tokens found, redirecting to login');
                 redirectToLogin();
                 return Promise.reject(error);
+            }
+
+            // For 403 errors, we might want to be more aggressive about redirecting
+            // since 403 often means the user doesn't have permission for the resource
+            if (error.response?.status === 403) {
+                console.log('[Response interceptor] 403 Forbidden - User may not have permission for this resource');
+                // Still try token refresh first, but log the 403 specifically
             }
 
             if (isRefreshing) {
@@ -144,8 +151,10 @@ axiosInstance.interceptors.response.use(
                 console.log('[Response interceptor] Token refresh failed:', refreshError.response?.status, refreshError.message);
 
                 // Handle different types of refresh errors
-                if (refreshError.response?.status === 401 || refreshError.response?.status === 403) {
-                    console.log('[Response interceptor] Refresh token invalid/expired, redirecting to login');
+                if (refreshError.response?.status === 401) {
+                    console.log('[Response interceptor] Refresh token invalid/expired (401), redirecting to login');
+                } else if (refreshError.response?.status === 403) {
+                    console.log('[Response interceptor] Refresh token forbidden (403), redirecting to login');
                 } else if (refreshError.response?.status >= 400) {
                     console.log('[Response interceptor] Refresh endpoint returned error, redirecting to login');
                 } else if (refreshError.code === 'ECONNABORTED' || refreshError.message?.includes('timeout')) {
