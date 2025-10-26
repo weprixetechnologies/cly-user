@@ -57,7 +57,7 @@ export default function OrderSummary({ params }) {
 
     // Calculate subtotal based on accepted quantities (for partial acceptance)
     const subtotal = data.items.reduce((s, it) => {
-        const unitPrice = Number(it.productPrice || 0);
+        const unitPrice = Number(it.pItemPrice || it.productPrice || 0);
         const acceptedQuantity = (it.accepted_units || 0);
         const requestedQuantity = (it.requested_units || it.units || 0);
         // Use accepted quantity if available, otherwise use requested quantity
@@ -126,7 +126,7 @@ export default function OrderSummary({ params }) {
                             </h2>
                             <div className="space-y-4">
                                 {data.items.map((it, idx) => {
-                                    const unitPrice = Number(it.productPrice || 0);
+                                    const unitPrice = Number(it.pItemPrice || it.productPrice || 0);
                                     const requestedQuantity = (it.requested_units || it.units || 0);
                                     const acceptedQuantity = (it.accepted_units || 0);
                                     const quantity = acceptedQuantity > 0 ? acceptedQuantity : requestedQuantity;

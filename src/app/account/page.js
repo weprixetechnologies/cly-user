@@ -210,7 +210,7 @@ export default function AccountPage() {
                                                             </div>
                                                         </div>
                                                         <div className="text-sm font-semibold text-gray-900">
-                                                            ₹{((item.pItemPrice || item.productPrice || 0) * (item.units || 0)).toFixed(2)}
+                                                            ₹{Number(item.itemTotal || 0).toFixed(2)}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -220,7 +220,7 @@ export default function AccountPage() {
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                                                 <div className="text-sm font-semibold text-gray-900">
                                                     Total: ₹{orderGroup.items.reduce((sum, item) =>
-                                                        sum + ((item.pItemPrice || item.productPrice || 0) * (item.units || 0)), 0
+                                                        sum + Number(item.itemTotal || 0), 0
                                                     ).toFixed(2)}
                                                 </div>
                                                 <a

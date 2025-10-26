@@ -88,7 +88,7 @@ const PrivacyPolicyPage = () => {
                     <div className="px-8 py-12">
                         <div className="prose prose-lg max-w-none">
                             <div
-                                className="text-gray-700 leading-relaxed"
+                                className="rich-text-content text-gray-700 leading-relaxed"
                                 dangerouslySetInnerHTML={{ __html: policy.content }}
                             />
                         </div>
