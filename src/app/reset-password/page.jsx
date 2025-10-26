@@ -28,7 +28,7 @@ function ResetPasswordContent() {
 
     const verifyToken = async () => {
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api'
 
             const response = await fetch(`${apiBase}/password-reset/verify/${token}`)
             const data = await response.json()
@@ -70,7 +70,7 @@ function ResetPasswordContent() {
         setLoading(true)
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api'
 
             const response = await fetch(`${apiBase}/password-reset/reset`, {
                 method: 'POST',
