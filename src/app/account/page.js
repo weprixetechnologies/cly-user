@@ -209,8 +209,14 @@ export default function AccountPage() {
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <div className="text-sm font-semibold text-gray-900">
-                                                            ₹{Number(item.itemTotal || 0).toFixed(2)}
+                                                        <div className="text-sm font-semibold text-gray-900 text-right">
+                                                            <p className="text-xs text-gray-500">Unit Price:    {item.pItemPrice || item.productPrice || 0}</p>
+
+
+                                                            ₹{(
+                                                                Number(item.pItemPrice || item.productPrice || 0) *
+                                                                Number(item.accepted_units || 0)
+                                                            ).toFixed(2)}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -219,9 +225,11 @@ export default function AccountPage() {
                                             {/* Order Total */}
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                                                 <div className="text-sm font-semibold text-gray-900">
-                                                    Total: ₹{orderGroup.items.reduce((sum, item) =>
-                                                        sum + Number(item.itemTotal || 0), 0
-                                                    ).toFixed(2)}
+                                                    Total: ₹{orderGroup.items.reduce((sum, item) => {
+                                                        const unitPrice = Number(item.pItemPrice || item.productPrice || 0);
+                                                        const acceptedQty = Number(item.accepted_units || 0);
+                                                        return sum + (unitPrice * acceptedQty);
+                                                    }, 0).toFixed(2)}
                                                 </div>
                                                 <a
                                                     href={`/order-success/order-summary/${orderGroup.orderID}`}
