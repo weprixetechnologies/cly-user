@@ -20,6 +20,9 @@ export default function AccountPage() {
     const [form, setForm] = useState({ name: '', phoneNumber: '', gstin: '' });
     const [loading, setLoading] = useState(true);
     const [uid, setUid] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         const cookieUid = getCookie('uid');
@@ -52,6 +55,78 @@ export default function AccountPage() {
     const saveProfile = async () => {
         await api.put(`/users/${uid}`, form);
         alert('Profile updated');
+    };
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPhotoPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePhotoUpload = async () => {
+        if (!selectedFile) {
+            alert('Please select a file to upload.');
+            return;
+        }
+
+        setIsUploading(true);
+
+        try {
+            // Bunny CDN configuration
+            const storageZone = 'ithyaraa';
+            const storageRegion = 'sg.storage.bunnycdn.com';
+            const pullZoneUrl = 'https://ithyaraa.b-cdn.net';
+            const apiKey = '7017f7c4-638b-48ab-add3858172a8-f520-4b88';
+
+            // Upload function
+            const uploadToBunny = async (file) => {
+                const fileName = encodeURIComponent(`profile_${uid}_${Date.now()}_${file.name}`);
+                const uploadUrl = `https://${storageRegion}/${storageZone}/${fileName}`;
+                const publicUrl = `${pullZoneUrl}/${fileName}`;
+
+                const res = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        AccessKey: apiKey,
+                        'Content-Type': file.type,
+                    },
+                    body: file,
+                });
+
+                if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+                return { imgUrl: publicUrl, imgAlt: file.name };
+            };
+
+            // Upload to Bunny CDN
+            const uploadResult = await uploadToBunny(selectedFile);
+            const publicUrl = uploadResult.imgUrl;
+
+            // Update user profile with photo URL
+            const response = await api.put(`/users/${uid}`, {
+                photo: publicUrl
+            });
+
+            if (response.data.success) {
+                // Update local user state
+                setUser(prev => ({ ...prev, photo: publicUrl }));
+                setPhotoPreview(null);
+                setSelectedFile(null);
+                alert('Profile photo updated successfully!');
+            } else {
+                alert('Failed to update profile photo. Please try again.');
+            }
+        } catch (error) {
+            console.error('Photo upload error:', error);
+            alert('Failed to upload photo. Please try again.');
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleSignOut = () => {
@@ -88,7 +163,7 @@ export default function AccountPage() {
                     </div>
                     <div className="hidden md:flex items-center gap-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={user?.photo || 'https://picsum.photos/100'} alt="avatar" className="w-12 h-12 rounded-full ring-2 ring-white/50 object-cover" />
+                        <img src={user?.photo || '/logo.jpg'} alt="avatar" className="w-12 h-12 rounded-full ring-2 ring-white/50 object-cover" />
                         <div className="text-right">
                             <div className="font-medium">{user?.name || 'User'}</div>
                             <div className="text-white/80 text-xs">{user?.emailID || ''}</div>
@@ -103,7 +178,7 @@ export default function AccountPage() {
                     <aside className="md:col-span-1 bg-white/90 backdrop-blur border border-orange-100 rounded-2xl p-4 shadow-sm">
                         <div className="flex flex-col items-center text-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={user?.photo || 'https://picsum.photos/120'} alt="avatar" className="w-20 h-20 rounded-full object-cover ring-2 ring-orange-100" />
+                            <img src={user?.photo || '/logo.jpg'} alt="avatar" className="w-20 h-20 rounded-full object-cover ring-2 ring-orange-100" />
                             <div className="mt-2 font-medium text-gray-900">{user?.name || 'My Account'}</div>
                             <div className="text-xs text-gray-500">{user?.emailID || ''}</div>
                         </div>
@@ -130,6 +205,78 @@ export default function AccountPage() {
                         {/* Tab content */}
                         {active === Tabs.PROFILE && (
                             <section className="mt-6 space-y-6">
+                                {/* Profile Photo Section */}
+                                <div>
+                                    <div className="font-medium mb-1 text-gray-900">Profile Photo</div>
+                                    <div className="text-sm text-gray-500 mb-4">Upload and manage your profile picture</div>
+
+                                    <div className="flex items-start space-x-6">
+                                        {/* Current Photo Display */}
+                                        <div className="flex-shrink-0">
+                                            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 border-2 border-gray-300">
+                                                {photoPreview ? (
+                                                    <img
+                                                        src={photoPreview}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : user?.photo ? (
+                                                    <img
+                                                        src={user.photo}
+                                                        alt="Profile"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2 text-center">Current Photo</p>
+                                        </div>
+
+                                        {/* Photo Upload Section */}
+                                        <div className="flex-1">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Choose Photo
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileSelect}
+                                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                                    />
+                                                </div>
+
+                                                {selectedFile && (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={handlePhotoUpload}
+                                                            disabled={isUploading}
+                                                            className="px-4 py-2 bg-[#EF6A22] text-white rounded-md hover:opacity-90 transition disabled:opacity-50"
+                                                        >
+                                                            {isUploading ? 'Uploading...' : 'Upload Photo'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedFile(null);
+                                                                setPhotoPreview(null);
+                                                            }}
+                                                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <div className="font-medium mb-1 text-gray-900">Personal Info</div>
                                     <div className="text-sm text-gray-500">Update your details here</div>
