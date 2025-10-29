@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
         setLoading(true)
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:8800/api'
 
             const response = await fetch(`${apiBase}/password-reset/request`, {
                 method: 'POST',
