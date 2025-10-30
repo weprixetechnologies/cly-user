@@ -358,12 +358,13 @@ export default function AccountPage() {
                                                         </div>
                                                         <div className="text-sm font-semibold text-gray-900 text-right">
                                                             <p className="text-xs text-gray-500">Unit Price:    {item.pItemPrice || item.productPrice || 0}</p>
-
-
-                                                            ₹{(
-                                                                Number(item.pItemPrice || item.productPrice || 0) *
-                                                                Number(item.accepted_units || 0)
-                                                            ).toFixed(2)}
+                                                            ₹{(() => {
+                                                                const unitPrice = Number(item.pItemPrice || item.productPrice || 0);
+                                                                const requestedQty = Number(item.requested_units || item.units || 0);
+                                                                const acceptedQty = Number(item.accepted_units || 0);
+                                                                const qty = orderGroup.orderStatus === 'accepted' ? acceptedQty : requestedQty;
+                                                                return (unitPrice * qty).toFixed(2);
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -374,8 +375,10 @@ export default function AccountPage() {
                                                 <div className="text-sm font-semibold text-gray-900">
                                                     Total: ₹{orderGroup.items.reduce((sum, item) => {
                                                         const unitPrice = Number(item.pItemPrice || item.productPrice || 0);
+                                                        const requestedQty = Number(item.requested_units || item.units || 0);
                                                         const acceptedQty = Number(item.accepted_units || 0);
-                                                        return sum + (unitPrice * acceptedQty);
+                                                        const qty = orderGroup.orderStatus === 'accepted' ? acceptedQty : requestedQty;
+                                                        return sum + (unitPrice * qty);
                                                     }, 0).toFixed(2)}
                                                 </div>
                                                 <a
