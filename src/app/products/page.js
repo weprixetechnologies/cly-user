@@ -1,12 +1,32 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ProductGridInfinity from '@/components/products/productGridInfinity'
+import axiosInstance from '@/utils/axiosInstance'
 
 export default function ProductsPage() {
     const [search, setSearch] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
+    const [categoryID, setCategoryID] = useState('')
+    const [minPrice, setMinPrice] = useState('')
+    const [maxPrice, setMaxPrice] = useState('')
+    const [categories, setCategories] = useState([])
     const [refreshKey, setRefreshKey] = useState(0)
+
+    useEffect(() => {
+        loadCategories()
+    }, [])
+
+    const loadCategories = async () => {
+        try {
+            const response = await axiosInstance.get('/products/categories/list')
+            if (response.data.success) {
+                setCategories(response.data.data || [])
+            }
+        } catch (error) {
+            console.error('Error loading categories:', error)
+        }
+    }
 
     const handleSearch = () => {
         const term = search.trim()
@@ -17,6 +37,9 @@ export default function ProductsPage() {
     const handleShowAll = () => {
         setSearch('')
         setSearchQuery('')
+        setCategoryID('')
+        setMinPrice('')
+        setMaxPrice('')
         setRefreshKey((k) => k + 1)
     }
 
@@ -24,6 +47,10 @@ export default function ProductsPage() {
         if (e.key === 'Enter') {
             handleSearch()
         }
+    }
+
+    const handleFilterChange = () => {
+        setRefreshKey((k) => k + 1)
     }
 
     return (
@@ -39,40 +66,102 @@ export default function ProductsPage() {
             <div className="max-w-[90%] mx-auto px-4 md:px-8 -mt-6 pb-10">
                 {/* Controls */}
                 <div className="bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm p-4 md:p-6">
-                    <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
-                        <div className="flex-1">
-                            <label className="block text-sm text-gray-600 mb-1">Search Products</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder={"Try \"marker\", \"pen\", \"notebook\"…"}
-                                    className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
-                                />
-                                <button
-                                    onClick={handleSearch}
-                                    className="inline-flex items-center bg-[#EF6A22] text-white px-5 py-2 rounded-lg hover:opacity-90 transition"
-                                >
-                                    Search
-                                </button>
-                                <button
-                                    onClick={handleShowAll}
-                                    className="inline-flex items-center border px-4 py-2 rounded-lg hover:bg-gray-50 transition"
-                                >
-                                    Show All
-                                </button>
+                    <div className="flex flex-col gap-4">
+                        {/* Search Row */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+                            <div className="flex-1">
+                                <label className="block text-sm text-gray-600 mb-1">Search Products</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder={"Try \"marker\", \"pen\", \"notebook\"…"}
+                                        className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                    />
+                                    <button
+                                        onClick={handleSearch}
+                                        className="inline-flex items-center bg-[#EF6A22] text-white px-5 py-2 rounded-lg hover:opacity-90 transition"
+                                    >
+                                        Search
+                                    </button>
+                                    <button
+                                        onClick={handleShowAll}
+                                        className="inline-flex items-center border px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div className="md:w-56">
-                            <label className="block text-sm text-gray-600 mb-1">Sort</label>
-                            <select className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent">
-                                <option value="">Relevance</option>
-                                <option value="price-asc">Price: Low to High</option>
-                                <option value="price-desc">Price: High to Low</option>
-                                <option value="new">Newest</option>
-                            </select>
+
+                        {/* Filters Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                            {/* Category Filter */}
+                            <div>
+                                <label className="block text-sm text-gray-600 mb-1">Category</label>
+                                <select
+                                    value={categoryID}
+                                    onChange={(e) => {
+                                        setCategoryID(e.target.value)
+                                        handleFilterChange()
+                                    }}
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                >
+                                    <option value="">All Categories</option>
+                                    {categories.map(category => (
+                                        <option key={category.categoryID} value={category.categoryID}>
+                                            {category.categoryName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Min Price Filter */}
+                            <div>
+                                <label className="block text-sm text-gray-600 mb-1">Min Price (₹)</label>
+                                <input
+                                    type="number"
+                                    value={minPrice}
+                                    onChange={(e) => {
+                                        setMinPrice(e.target.value)
+                                        handleFilterChange()
+                                    }}
+                                    placeholder="0"
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                />
+                            </div>
+
+                            {/* Max Price Filter */}
+                            <div>
+                                <label className="block text-sm text-gray-600 mb-1">Max Price (₹)</label>
+                                <input
+                                    type="number"
+                                    value={maxPrice}
+                                    onChange={(e) => {
+                                        setMaxPrice(e.target.value)
+                                        handleFilterChange()
+                                    }}
+                                    placeholder="No limit"
+                                    min="0"
+                                    step="0.01"
+                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                                />
+                            </div>
+
+                            {/* Sort */}
+                            <div>
+                                <label className="block text-sm text-gray-600 mb-1">Sort</label>
+                                <select className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent">
+                                    <option value="">Relevance</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                    <option value="new">Newest</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -88,7 +177,15 @@ export default function ProductsPage() {
 
                 {/* Products grid */}
                 <div className="mt-6">
-                    <ProductGridInfinity key={`${searchQuery}|${refreshKey}`} initialLimit={20} search={searchQuery} visitShop={false} />
+                    <ProductGridInfinity 
+                        key={`${searchQuery}|${categoryID}|${minPrice}|${maxPrice}|${refreshKey}`} 
+                        initialLimit={20} 
+                        search={searchQuery}
+                        categoryID={categoryID}
+                        minPrice={minPrice}
+                        maxPrice={maxPrice}
+                        visitShop={false} 
+                    />
                 </div>
             </div>
         </div>

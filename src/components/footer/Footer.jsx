@@ -215,28 +215,70 @@ const Footer = () => {
                     {/* Contact Info */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold">Contact Info</h3>
-                        <div className="space-y-2 text-sm text-gray-300">
+                        <div className="space-y-3 text-sm text-gray-300">
                             {loading ? (
-                                // Show loading state with default info
-                                <>
-                                    <div className="flex items-start space-x-2">
-                                        <svg className="h-4 w-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                        </svg>
-                                        <span>Loading contact details...</span>
-                                    </div>
-                                </>
+                                // Show loading state
+                                <div className="flex items-start space-x-2">
+                                    <svg className="h-4 w-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Loading contact details...</span>
+                                </div>
                             ) : contacts.length > 0 ? (
-                                // Show dynamic contact details (excluding social media)
-                                contacts
-                                    .filter(contact => contact.type !== 'social_media')
-                                    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
-                                    .map((contact, index) => (
-                                        <div key={contact.id || index} className="flex items-start space-x-2">
-                                            {getContactIcon(contact.type)}
-                                            <span>{contact.value}</span>
-                                        </div>
-                                    ))
+                                <>
+                                    {/* Head Office Section */}
+                                    {(() => {
+                                        const headOfficeContacts = contacts
+                                            .filter(contact => 
+                                                (contact.type === 'headquarter_address' || contact.type === 'headquarter_phone') &&
+                                                contact.value && 
+                                                contact.value.trim() !== ''
+                                            )
+                                            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+
+                                        const regularContacts = contacts
+                                            .filter(contact => 
+                                                contact.type !== 'social_media' &&
+                                                contact.type !== 'headquarter_address' &&
+                                                contact.type !== 'headquarter_phone' &&
+                                                contact.value && 
+                                                contact.value.trim() !== ''
+                                            )
+                                            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+
+                                        return (
+                                            <>
+                                                {/* Head Office Section */}
+                                                {headOfficeContacts.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-white font-medium text-xs uppercase tracking-wider mb-2">Headquarter</h4>
+                                                        {headOfficeContacts
+                                                            .map((contact, index) => (
+                                                                <div key={contact.id || index} className="flex items-start space-x-2">
+                                                                    {getContactIcon(contact.type === 'headquarter_phone' ? 'phone' : 'address')}
+                                                                    <span className={contact.type === 'headquarter_address' ? 'whitespace-pre-line' : ''}>
+                                                                        {contact.value}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Other Contact Info (Email, etc.) */}
+                                                {regularContacts.length > 0 && (
+                                                    <div className="space-y-2 pt-2 border-t border-gray-700">
+                                                        {regularContacts.map((contact, index) => (
+                                                            <div key={contact.id || index} className="flex items-start space-x-2">
+                                                                {getContactIcon(contact.type)}
+                                                                <span>{contact.value}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
+                                </>
                             ) : (
                                 // Fallback to default contact info
                                 <>

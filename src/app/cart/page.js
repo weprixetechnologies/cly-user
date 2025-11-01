@@ -35,6 +35,8 @@ const Page = () => {
     const [showCheckoutModal, setShowCheckoutModal] = useState(false)
     const [isAuthenticated, setIsAuthenticated] = useState(null);
     const [redirecting, setRedirecting] = useState(false);
+    const [customerComment, setCustomerComment] = useState('');
+    const [themeCategory, setThemeCategory] = useState('');
     const steps = [
         { id: 1, label: 'Cart' },
         { id: 2, label: 'Address & Payment' }
@@ -150,6 +152,8 @@ const Page = () => {
                 address: selectedAddress,
                 paymentMode,
                 couponCode: appliedCoupon?.couponCode || null,
+                customerComment: customerComment.trim() || null,
+                themeCategory: themeCategory.trim() || null,
             });
 
             // Handle successful order placement
@@ -318,6 +322,42 @@ const Page = () => {
                                 <Suspense fallback={<div className="h-32 bg-gray-200 animate-pulse rounded-lg" />}>
                                     <SelectPayment onSelect={handlePaymentModeSelect} />
                                 </Suspense>
+                                {/* Customer Comment Section */}
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <label htmlFor="customer-comment" className="block font-semibold text-lg mb-2">
+                                        Order Comments (Optional)
+                                    </label>
+                                    <textarea
+                                        id="customer-comment"
+                                        value={customerComment}
+                                        onChange={(e) => setCustomerComment(e.target.value)}
+                                        placeholder="Add any special instructions or comments for your order..."
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        rows={4}
+                                        maxLength={500}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        {customerComment.length}/500 characters
+                                    </p>
+                                </div>
+                                {/* Theme Category Section */}
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <label htmlFor="theme-category" className="block font-semibold text-lg mb-2">
+                                        Theme Category (Optional)
+                                    </label>
+                                    <input
+                                        id="theme-category"
+                                        type="text"
+                                        value={themeCategory}
+                                        onChange={(e) => setThemeCategory(e.target.value)}
+                                        placeholder="Enter theme category (e.g., Birthday, Wedding, Corporate, etc.)"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        maxLength={100}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Specify the theme for your order
+                                    </p>
+                                </div>
                             </div>
                         </>
                     }

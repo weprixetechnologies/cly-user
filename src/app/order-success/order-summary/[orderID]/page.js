@@ -363,7 +363,7 @@ export default function OrderSummary({ params }) {
 
 
                         {/* Order Remarks */}
-                        {info.remarks && (
+                        {(info.remarks || (info.remarks_photos && info.remarks_photos.length > 0)) && (
                             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
                                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                                     <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -374,7 +374,37 @@ export default function OrderSummary({ params }) {
                                     Admin Remarks
                                 </h3>
                                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <div className="text-sm text-blue-800 whitespace-pre-wrap">{info.remarks}</div>
+                                    {info.remarks && (
+                                        <div className="text-sm text-blue-800 whitespace-pre-wrap mb-3">{info.remarks}</div>
+                                    )}
+                                    {info.remarks_photos && (() => {
+                                        let photos = [];
+                                        if (Array.isArray(info.remarks_photos)) {
+                                            photos = info.remarks_photos;
+                                        } else if (typeof info.remarks_photos === 'string') {
+                                            try {
+                                                photos = JSON.parse(info.remarks_photos);
+                                            } catch {
+                                                photos = [];
+                                            }
+                                        }
+                                        return photos.length > 0 ? (
+                                            <div>
+                                                <div className="text-xs font-medium text-blue-800 mb-2">Photos:</div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {photos.map((photo, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={photo}
+                                                            alt={`Remarks photo ${index + 1}`}
+                                                            className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition"
+                                                            onClick={() => window.open(photo, '_blank')}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                 </div>
                             </div>
                         )}

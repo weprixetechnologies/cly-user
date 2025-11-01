@@ -163,7 +163,7 @@ export default function AccountPage() {
                     </div>
                     <div className="hidden md:flex items-center gap-3">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={user?.photo || '/logo.jpg'} alt="avatar" className="w-12 h-12 rounded-full ring-2 ring-white/50 object-cover" />
+                        <img src={user?.photo || 'https://picsum.photos/200/200?random=1'} alt="avatar" className="w-12 h-12 rounded-full ring-2 ring-white/50 object-cover" />
                         <div className="text-right">
                             <div className="font-medium">{user?.name || 'User'}</div>
                             <div className="text-white/80 text-xs">{user?.emailID || ''}</div>
@@ -178,7 +178,7 @@ export default function AccountPage() {
                     <aside className="md:col-span-1 bg-white/90 backdrop-blur border border-orange-100 rounded-2xl p-4 shadow-sm">
                         <div className="flex flex-col items-center text-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={user?.photo || '/logo.jpg'} alt="avatar" className="w-20 h-20 rounded-full object-cover ring-2 ring-orange-100" />
+                            <img src={user?.photo || 'https://picsum.photos/200/200?random=1'} alt="avatar" className="w-20 h-20 rounded-full object-cover ring-2 ring-orange-100" />
                             <div className="mt-2 font-medium text-gray-900">{user?.name || 'My Account'}</div>
                             <div className="text-xs text-gray-500">{user?.emailID || ''}</div>
                         </div>
@@ -316,6 +316,7 @@ export default function AccountPage() {
                                                 orderStatus: order.orderStatus,
                                                 createdAt: order.createdAt,
                                                 remarks: order.remarks,
+                                                remarks_photos: order.remarks_photos,
                                                 items: []
                                             };
                                         }
@@ -390,10 +391,40 @@ export default function AccountPage() {
                                             </div>
 
                                             {/* Admin Remarks */}
-                                            {orderGroup.remarks && (
+                                            {(orderGroup.remarks || (orderGroup.remarks_photos && orderGroup.remarks_photos.length > 0)) && (
                                                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                                     <div className="text-xs font-medium text-blue-800 mb-1">Admin Remarks:</div>
-                                                    <div className="text-sm text-blue-700 whitespace-pre-wrap">{orderGroup.remarks}</div>
+                                                    {orderGroup.remarks && (
+                                                        <div className="text-sm text-blue-700 whitespace-pre-wrap mb-2">{orderGroup.remarks}</div>
+                                                    )}
+                                                    {orderGroup.remarks_photos && orderGroup.remarks_photos.length > 0 && (
+                                                        <div className="mt-2">
+                                                            <div className="text-xs font-medium text-blue-800 mb-2">Photos:</div>
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                {(Array.isArray(orderGroup.remarks_photos)
+                                                                    ? orderGroup.remarks_photos
+                                                                    : (typeof orderGroup.remarks_photos === 'string'
+                                                                        ? (() => {
+                                                                            try {
+                                                                                return JSON.parse(orderGroup.remarks_photos);
+                                                                            } catch {
+                                                                                return [];
+                                                                            }
+                                                                        })()
+                                                                        : []
+                                                                    )
+                                                                ).map((photo, index) => (
+                                                                    <img
+                                                                        key={index}
+                                                                        src={photo}
+                                                                        alt={`Remarks photo ${index + 1}`}
+                                                                        className="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition"
+                                                                        onClick={() => window.open(photo, '_blank')}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

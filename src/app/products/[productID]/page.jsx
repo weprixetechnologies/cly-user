@@ -294,6 +294,11 @@ export default function ProductDetail({ params }) {
                                     {c}
                                 </span>
                             ))}
+                            {product.themeCategory && (
+                                <span key={product.themeCategory} className='bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium'>
+                                    {product.themeCategory}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="border border-gray-200 p-3 sm:p-4 bg-gray-50 rounded-lg mt-4">

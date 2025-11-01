@@ -17,7 +17,7 @@ const mapApiProductToCard = (p) => ({
     inventory: p.inventory || 0,
 })
 
-const ProductGridInfinity = ({ initialLimit = 20, search = '', maxTotal, visitShop = true }) => {
+const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', minPrice = '', maxPrice = '', maxTotal, visitShop = true }) => {
     const [products, setProducts] = useState([])
     const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(false)
@@ -37,12 +37,15 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', maxTotal, visitSh
             url.searchParams.set('page', String(page))
             url.searchParams.set('limit', String(initialLimit))
             if (search) url.searchParams.set('search', search)
+            if (categoryID) url.searchParams.set('categoryID', categoryID)
+            if (minPrice) url.searchParams.set('minPrice', minPrice)
+            if (maxPrice) url.searchParams.set('maxPrice', maxPrice)
 
             const res = await fetch(url.toString(), { cache: 'no-store' })
             if (!res.ok) throw new Error('Failed to fetch products')
             const json = await res.json()
             const items = (json?.data?.products || []).map(mapApiProductToCard)
-            const total = json?.data?.total
+            const total = json?.data?.pagination?.total
             const combined = page === 1 ? items : [...products, ...items]
 
             // Apply optional cap if provided
@@ -65,15 +68,15 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', maxTotal, visitSh
         } finally {
             setLoading(false)
         }
-    }, [page, initialLimit, search, loading, products, maxTotal])
+    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, loading, products, maxTotal])
 
     // Initial load / filter changes
     useEffect(() => {
-        // reset when search changes
+        // reset when filters change
         setProducts([])
         setPage(1)
         setHasMore(true)
-    }, [search, initialLimit])
+    }, [search, categoryID, minPrice, maxPrice, initialLimit])
 
     useEffect(() => {
         fetchPage()

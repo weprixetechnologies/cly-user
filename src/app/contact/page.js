@@ -77,13 +77,60 @@ const ContactPage = () => {
         }
     };
 
-    const groupedContacts = contacts.reduce((acc, contact) => {
-        if (!acc[contact.type]) {
-            acc[contact.type] = [];
-        }
-        acc[contact.type].push(contact);
-        return acc;
-    }, {});
+    // Separate headquarter contacts by explicit types
+    const headquarterContacts = contacts.filter(contact => 
+        (contact.type === 'headquarter_address' || contact.type === 'headquarter_phone') &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
+
+    // Separate office contacts (office addresses/phones but not headquarter)
+    const officeContacts = contacts.filter(contact => 
+        contact.label?.toLowerCase().includes('office') &&
+        contact.type !== 'headquarter_address' &&
+        contact.type !== 'headquarter_phone' &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
+
+    // Separate email and phone for CONTACT tablet
+    const regularEmails = contacts.filter(contact => 
+        contact.type === 'email' &&
+        contact.type !== 'headquarter_address' &&
+        contact.type !== 'headquarter_phone' &&
+        !contact.label?.toLowerCase().includes('office') &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
+
+    const regularPhones = contacts.filter(contact => 
+        contact.type === 'phone' &&
+        contact.type !== 'headquarter_address' &&
+        contact.type !== 'headquarter_phone' &&
+        !contact.label?.toLowerCase().includes('office') &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
+
+    // Separate addresses for ADDRESS tablet
+    const regularAddresses = contacts.filter(contact => 
+        contact.type === 'address' &&
+        contact.type !== 'headquarter_address' &&
+        contact.type !== 'headquarter_phone' &&
+        !contact.label?.toLowerCase().includes('office') &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
+
+    // Separate social media for SOCIAL MEDIA tablet
+    const socialMediaContacts = contacts.filter(contact => 
+        contact.type === 'social_media' &&
+        contact.type !== 'headquarter_address' &&
+        contact.type !== 'headquarter_phone' &&
+        !contact.label?.toLowerCase().includes('office') &&
+        contact.value && 
+        contact.value.trim() !== ''
+    );
 
     if (loading) {
         return (
@@ -133,52 +180,178 @@ const ContactPage = () => {
                     </p>
                 </div>
 
-                {/* Contact Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                    {Object.entries(groupedContacts).map(([type, typeContacts]) => (
-                        <div key={type} className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow">
-                            <div className={`w-16 h-16 bg-gradient-to-r ${getContactColor(type)} rounded-2xl flex items-center justify-center text-white mb-6`}>
-                                {getContactIcon(type)}
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-6 capitalize">
-                                {type.replace('_', ' ')}
-                            </h3>
-                            <div className="space-y-4">
-                                {typeContacts.map((contact, index) => (
-                                    <div key={contact.id} className="border-l-4 border-gray-200 pl-4">
-                                        <h4 className="font-semibold text-gray-900 mb-1">{contact.label}</h4>
-                                        {type === 'email' ? (
-                                            <a
-                                                href={`mailto:${contact.value}`}
-                                                className="text-blue-600 hover:text-blue-700 transition-colors"
-                                            >
-                                                {contact.value}
-                                            </a>
-                                        ) : type === 'phone' ? (
-                                            <a
-                                                href={`tel:${contact.value}`}
-                                                className="text-green-600 hover:text-green-700 transition-colors"
-                                            >
-                                                {contact.value}
-                                            </a>
-                                        ) : type === 'social_media' ? (
-                                            <a
-                                                href={contact.value}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-pink-600 hover:text-pink-700 transition-colors"
-                                            >
-                                                {contact.value}
-                                            </a>
-                                        ) : (
-                                            <p className="text-gray-700">{contact.value}</p>
-                                        )}
+                {/* Headquarter Section */}
+                {headquarterContacts.length > 0 && (
+                    <div className="mb-16">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Headquarter</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {headquarterContacts.map((contact, index) => (
+                                <div 
+                                    key={contact.id || index} 
+                                    className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all hover:border-purple-300"
+                                >
+                                    <div className="flex items-start space-x-4">
+                                        <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-r ${getContactColor(contact.type === 'headquarter_phone' ? 'phone' : 'address')} rounded-lg flex items-center justify-center text-white`}>
+                                            {getContactIcon(contact.type === 'headquarter_phone' ? 'phone' : 'address')}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-2">{contact.label}</h3>
+                                            {contact.type === 'headquarter_phone' ? (
+                                                <a
+                                                    href={`tel:${contact.value}`}
+                                                    className="text-green-600 hover:text-green-700 transition-colors font-medium"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            ) : contact.type === 'headquarter_address' ? (
+                                                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{contact.value}</p>
+                                            ) : (
+                                                <p className="text-gray-700">{contact.value}</p>
+                                            )}
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                )}
+
+                {/* Office Section */}
+                {officeContacts.length > 0 && (
+                    <div className="mb-16">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Office</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {officeContacts.map((contact, index) => (
+                                <div 
+                                    key={contact.id || index} 
+                                    className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all hover:border-blue-300"
+                                >
+                                    <div className="flex items-start space-x-4">
+                                        <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-r ${getContactColor(contact.type)} rounded-lg flex items-center justify-center text-white`}>
+                                            {getContactIcon(contact.type)}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-bold text-gray-900 mb-2">{contact.label}</h3>
+                                            {contact.type === 'phone' ? (
+                                                <a
+                                                    href={`tel:${contact.value}`}
+                                                    className="text-green-600 hover:text-green-700 transition-colors font-medium"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            ) : contact.type === 'address' ? (
+                                                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{contact.value}</p>
+                                            ) : (
+                                                <p className="text-gray-700">{contact.value}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Contact Information Section - 3 Tabs */}
+                {(regularEmails.length > 0 || regularPhones.length > 0 || regularAddresses.length > 0 || socialMediaContacts.length > 0) && (
+                    <div className="mb-16">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Contact Information</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* CONTACT Tablet - Email & Phone Combined */}
+                            {(regularEmails.length > 0 || regularPhones.length > 0) && (
+                                <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all hover:border-blue-300">
+                                    <div className="flex items-center space-x-3 mb-6">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-900">Contact</h3>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {/* Emails */}
+                                        {regularEmails.map((contact, index) => (
+                                            <div key={contact.id || index} className="border-l-4 border-blue-200 pl-4">
+                                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{contact.label}</h4>
+                                                <a
+                                                    href={`mailto:${contact.value}`}
+                                                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Phones */}
+                                        {regularPhones.map((contact, index) => (
+                                            <div key={contact.id || index} className="border-l-4 border-green-200 pl-4">
+                                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{contact.label}</h4>
+                                                <a
+                                                    href={`tel:${contact.value}`}
+                                                    className="text-green-600 hover:text-green-700 transition-colors"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ADDRESS Tablet */}
+                            {regularAddresses.length > 0 && (
+                                <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all hover:border-purple-300">
+                                    <div className="flex items-center space-x-3 mb-6">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-900">Address</h3>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {regularAddresses.map((contact, index) => (
+                                            <div key={contact.id || index} className="border-l-4 border-purple-200 pl-4">
+                                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{contact.label}</h4>
+                                                <p className="text-gray-700 whitespace-pre-line leading-relaxed text-sm">{contact.value}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SOCIAL MEDIA Tablet */}
+                            {socialMediaContacts.length > 0 && (
+                                <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6 hover:shadow-xl transition-all hover:border-pink-300">
+                                    <div className="flex items-center space-x-3 mb-6">
+                                        <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg flex items-center justify-center text-white">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-900">Social Media</h3>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {socialMediaContacts.map((contact, index) => (
+                                            <div key={contact.id || index} className="border-l-4 border-pink-200 pl-4">
+                                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{contact.label}</h4>
+                                                <a
+                                                    href={contact.value}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-pink-600 hover:text-pink-700 transition-colors"
+                                                >
+                                                    {contact.value}
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Additional Information */}
                 <div className="bg-white rounded-2xl shadow-lg p-8">
