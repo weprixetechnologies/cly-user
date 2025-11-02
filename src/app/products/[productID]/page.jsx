@@ -18,7 +18,7 @@ export default function ProductDetail({ params }) {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`http://localhost:3300/api/products/${productID}`);
+                const response = await fetch(`http://72.60.219.181:3300/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
                 console.log(data.data.minQty);
