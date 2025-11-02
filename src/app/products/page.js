@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import ProductGridInfinity from '@/components/products/productGridInfinity'
+import PriceSlider from '@/components/products/PriceSlider'
 import axiosInstance from '@/utils/axiosInstance'
 
 export default function ProductsPage() {
@@ -12,9 +13,11 @@ export default function ProductsPage() {
     const [maxPrice, setMaxPrice] = useState('')
     const [categories, setCategories] = useState([])
     const [refreshKey, setRefreshKey] = useState(0)
+    const [priceRange, setPriceRange] = useState({ min: 0, max: 1299 })
 
     useEffect(() => {
         loadCategories()
+        loadPriceRange()
     }, [])
 
     const loadCategories = async () => {
@@ -25,6 +28,27 @@ export default function ProductsPage() {
             }
         } catch (error) {
             console.error('Error loading categories:', error)
+        }
+    }
+
+    const loadPriceRange = async () => {
+        try {
+            // Fetch first page to determine price range
+            const response = await axiosInstance.get('/products/list?page=1&limit=100')
+            if (response.data.success && response.data.data.products) {
+                const products = response.data.data.products
+                if (products.length > 0) {
+                    const prices = products.map(p => parseFloat(p.productPrice) || 0).filter(p => p > 0)
+                    if (prices.length > 0) {
+                        const min = Math.floor(Math.min(...prices))
+                        const max = Math.ceil(Math.max(...prices))
+                        setPriceRange({ min: Math.max(0, min), max: Math.max(100, max) })
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading price range:', error)
+            // Keep default range
         }
     }
 
@@ -97,7 +121,7 @@ export default function ProductsPage() {
                         </div>
 
                         {/* Filters Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                             {/* Category Filter */}
                             <div>
                                 <label className="block text-sm text-gray-600 mb-1">Category</label>
@@ -118,40 +142,6 @@ export default function ProductsPage() {
                                 </select>
                             </div>
 
-                            {/* Min Price Filter */}
-                            <div>
-                                <label className="block text-sm text-gray-600 mb-1">Min Price (₹)</label>
-                                <input
-                                    type="number"
-                                    value={minPrice}
-                                    onChange={(e) => {
-                                        setMinPrice(e.target.value)
-                                        handleFilterChange()
-                                    }}
-                                    placeholder="0"
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
-                                />
-                            </div>
-
-                            {/* Max Price Filter */}
-                            <div>
-                                <label className="block text-sm text-gray-600 mb-1">Max Price (₹)</label>
-                                <input
-                                    type="number"
-                                    value={maxPrice}
-                                    onChange={(e) => {
-                                        setMaxPrice(e.target.value)
-                                        handleFilterChange()
-                                    }}
-                                    placeholder="No limit"
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
-                                />
-                            </div>
-
                             {/* Sort */}
                             <div>
                                 <label className="block text-sm text-gray-600 mb-1">Sort</label>
@@ -162,6 +152,21 @@ export default function ProductsPage() {
                                     <option value="new">Newest</option>
                                 </select>
                             </div>
+                        </div>
+
+                        {/* Price Slider */}
+                        <div className="mt-2">
+                            <PriceSlider
+                                minPrice={minPrice}
+                                maxPrice={maxPrice}
+                                minRange={priceRange.min}
+                                maxRange={priceRange.max}
+                                onChange={(newMin, newMax) => {
+                                    setMinPrice(newMin)
+                                    setMaxPrice(newMax)
+                                    handleFilterChange()
+                                }}
+                            />
                         </div>
                     </div>
 

@@ -273,7 +273,7 @@ export default function ProductDetail({ params }) {
                             >
                                 {(product.inventory || 0) <= 0 ? 'Out of Stock' : 'Add to Cart'}
                             </button>
-                            <button className='bg-[#2862AD] flex-1 text-white px-4 py-3 sm:py-2 rounded-md h-[50px] flex justify-center items-center hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer'>
+                            <button className='bg-[#2862AD] flex-1 text-white px-4 py-3 sm:py-2 rounded-md h-[50px] flex justify-center items-center hover:bg-[#fff]/80 hover:text-[#EF6A22] hover:border hover:border-[#EF6A22] transition-all duration-300 hover:cursor-pointer' onClick={() => window.location.href = '/contact'}>
                                 <IoIosCall size={20} className='mr-2' />
                                 <span className='hidden sm:inline'>Contact Us</span>
                                 <span className='sm:hidden'>Contact</span>
