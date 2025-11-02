@@ -17,7 +17,7 @@ const mapApiProductToCard = (p) => ({
     inventory: p.inventory || 0,
 })
 
-const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', minPrice = '', maxPrice = '', maxTotal, visitShop = true }) => {
+const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', minPrice = '', maxPrice = '', maxTotal, visitShop = true, outOfStock = true }) => {
     const [products, setProducts] = useState([])
     const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(false)
@@ -40,18 +40,20 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
             if (categoryID) url.searchParams.set('categoryID', categoryID)
             if (minPrice) url.searchParams.set('minPrice', minPrice)
             if (maxPrice) url.searchParams.set('maxPrice', maxPrice)
+            // Add outOfStock parameter
+            url.searchParams.set('outOfStock', String(outOfStock))
 
             const res = await fetch(url.toString(), { cache: 'no-store' })
             if (!res.ok) throw new Error('Failed to fetch products')
             const json = await res.json()
             const items = (json?.data?.products || []).map(mapApiProductToCard)
             const total = json?.data?.pagination?.total
-            
+
             // Calculate the final list - we need to get current products first
             setProducts(prevProducts => {
                 const combined = page === 1 ? items : [...prevProducts, ...items]
                 const finalList = typeof maxTotal === 'number' ? combined.slice(0, maxTotal) : combined
-                
+
                 // Determine if there are more items to load based on finalList
                 let nextHasMore = true
                 if (typeof maxTotal === 'number' && finalList.length >= maxTotal) {
@@ -62,10 +64,10 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
                 } else {
                     nextHasMore = items.length === initialLimit
                 }
-                
+
                 // Update hasMore state
                 setHasMore(nextHasMore)
-                
+
                 return finalList
             })
         } catch (e) {
@@ -74,7 +76,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         } finally {
             setLoading(false)
         }
-    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, maxTotal])
+    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, maxTotal, outOfStock])
 
     // Initial load / filter changes
     useEffect(() => {
@@ -82,7 +84,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         setProducts([])
         setPage(1)
         setHasMore(true)
-    }, [search, categoryID, minPrice, maxPrice, initialLimit])
+    }, [search, categoryID, minPrice, maxPrice, initialLimit, outOfStock])
 
     useEffect(() => {
         fetchPage()
