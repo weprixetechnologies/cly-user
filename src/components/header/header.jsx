@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import logo from './../../../public/logo.jpg'
+import logo from './../../../public/logo.png'
 import { BsHandbag } from 'react-icons/bs'
 import { CiUser } from 'react-icons/ci'
 import { FiSearch } from 'react-icons/fi'
