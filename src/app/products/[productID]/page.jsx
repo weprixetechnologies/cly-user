@@ -314,7 +314,7 @@ export default function ProductDetail({ params }) {
                 <Feature label="Quality Assured Products" />
                 <Feature label="Fastrack & Free Shipping" />
                 <Feature label="Cash on Delivery Available" />
-                <Feature label="5 Days Return Policy" />
+                <Feature label="Exclusive Products" />
             </div>
 
             {/* Description */}

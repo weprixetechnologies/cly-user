@@ -46,29 +46,35 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
             const json = await res.json()
             const items = (json?.data?.products || []).map(mapApiProductToCard)
             const total = json?.data?.pagination?.total
-            const combined = page === 1 ? items : [...products, ...items]
-
-            // Apply optional cap if provided
-            const finalList = typeof maxTotal === 'number' ? combined.slice(0, maxTotal) : combined
-            setProducts(finalList)
-
-            // Determine if there are more items to load
-            let nextHasMore = true
-            if (typeof maxTotal === 'number' && finalList.length >= maxTotal) {
-                nextHasMore = false
-            } else if (typeof total === 'number') {
-                const capTotal = typeof maxTotal === 'number' ? Math.min(total, maxTotal) : total
-                nextHasMore = finalList.length < capTotal
-            } else {
-                nextHasMore = items.length === initialLimit
-            }
-            setHasMore(nextHasMore)
+            
+            // Calculate the final list - we need to get current products first
+            setProducts(prevProducts => {
+                const combined = page === 1 ? items : [...prevProducts, ...items]
+                const finalList = typeof maxTotal === 'number' ? combined.slice(0, maxTotal) : combined
+                
+                // Determine if there are more items to load based on finalList
+                let nextHasMore = true
+                if (typeof maxTotal === 'number' && finalList.length >= maxTotal) {
+                    nextHasMore = false
+                } else if (typeof total === 'number') {
+                    const capTotal = typeof maxTotal === 'number' ? Math.min(total, maxTotal) : total
+                    nextHasMore = finalList.length < capTotal
+                } else {
+                    nextHasMore = items.length === initialLimit
+                }
+                
+                // Update hasMore state
+                setHasMore(nextHasMore)
+                
+                return finalList
+            })
         } catch (e) {
             setError(e?.message || 'Something went wrong')
+            setHasMore(false) // Stop trying if there's an error
         } finally {
             setLoading(false)
         }
-    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, loading, products, maxTotal])
+    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, maxTotal])
 
     // Initial load / filter changes
     useEffect(() => {
@@ -86,6 +92,14 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
     // Intersection Observer to trigger loading more
     useEffect(() => {
         if (!sentinelRef.current) return
+        if (!hasMore) {
+            // Don't observe if there's no more data to load
+            if (observerRef.current) {
+                observerRef.current.disconnect()
+                observerRef.current = null
+            }
+            return
+        }
 
         if (observerRef.current) observerRef.current.disconnect()
         observerRef.current = new IntersectionObserver((entries) => {
@@ -96,8 +110,13 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         }, { rootMargin: '200px' })
 
         observerRef.current.observe(sentinelRef.current)
-        return () => observerRef.current && observerRef.current.disconnect()
-    }, [fetchPage])
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect()
+                observerRef.current = null
+            }
+        }
+    }, [loading, hasMore])
 
     return (
         <div>
