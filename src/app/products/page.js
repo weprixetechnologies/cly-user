@@ -120,7 +120,7 @@ export default function ProductsPage() {
                             </div>
                         </div>
 
-                        {/* Filters Row */}
+                        {/* Filters Row - Category + Sort + Price Slider */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                             {/* Category Filter */}
                             <div>
@@ -152,10 +152,8 @@ export default function ProductsPage() {
                                     <option value="new">Newest</option>
                                 </select>
                             </div>
-                        </div>
 
-                        {/* Price Slider */}
-                        <div className="mt-2">
+                            {/* Price Slider - Compact */}
                             <PriceSlider
                                 minPrice={minPrice}
                                 maxPrice={maxPrice}

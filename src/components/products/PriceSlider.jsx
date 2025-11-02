@@ -8,7 +8,6 @@ const PriceSlider = ({ minPrice: initialMinPrice = '', maxPrice: initialMaxPrice
     const [minInputValue, setMinInputValue] = useState('')
     const [maxInputValue, setMaxInputValue] = useState('')
     const [isFocused, setIsFocused] = useState(null) // 'min' or 'max' or null
-    const [isCollapsed, setIsCollapsed] = useState(false)
     const [isDragging, setIsDragging] = useState(null) // 'min' or 'max'
     const sliderRef = useRef(null)
 
@@ -156,91 +155,71 @@ const PriceSlider = ({ minPrice: initialMinPrice = '', maxPrice: initialMaxPrice
 
     return (
         <div className="w-full">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-black">Price</h3>
-                <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="text-gray-500 hover:text-gray-700"
-                    aria-label={isCollapsed ? "Expand" : "Collapse"}
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                    </svg>
-                </button>
-            </div>
-
-            {!isCollapsed && (
-                <>
-                    {/* Input Fields */}
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="flex-1 relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">₹</span>
-                            <input
-                                type="text"
-                                value={isFocused === 'min' ? minInputValue : formatPrice(minPrice)}
-                                onChange={handleMinInputChange}
-                                onFocus={handleMinFocus}
-                                onBlur={handleMinBlur}
-                                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
-                            />
-                        </div>
-                        <span className="text-gray-400">-</span>
-                        <div className="flex-1 relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">₹</span>
-                            <input
-                                type="text"
-                                value={isFocused === 'max' ? maxInputValue : formatPrice(maxPrice)}
-                                onChange={handleMaxInputChange}
-                                onFocus={handleMaxFocus}
-                                onBlur={handleMaxBlur}
-                                className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
-                            />
-                        </div>
+            <label className="block text-sm text-gray-600 mb-1">Price</label>
+            <div className="flex flex-col gap-2">
+                {/* Compact Input Fields */}
+                <div className="flex items-center gap-2">
+                    <div className="flex-1 relative">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">₹</span>
+                        <input
+                            type="text"
+                            value={isFocused === 'min' ? minInputValue : formatPrice(minPrice)}
+                            onChange={handleMinInputChange}
+                            onFocus={handleMinFocus}
+                            onBlur={handleMinBlur}
+                            className="w-full pl-6 pr-2 py-1.5 text-sm border border-gray-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                        />
                     </div>
+                    <span className="text-gray-400 text-xs">-</span>
+                    <div className="flex-1 relative">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-xs">₹</span>
+                        <input
+                            type="text"
+                            value={isFocused === 'max' ? maxInputValue : formatPrice(maxPrice)}
+                            onChange={handleMaxInputChange}
+                            onFocus={handleMaxFocus}
+                            onBlur={handleMaxBlur}
+                            className="w-full pl-6 pr-2 py-1.5 text-sm border border-gray-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent"
+                        />
+                    </div>
+                </div>
 
-                    {/* Slider Bar */}
-                    <div className="relative mb-4">
+                {/* Compact Slider Bar */}
+                <div className="relative">
+                    <div
+                        ref={sliderRef}
+                        className="relative h-1.5 bg-black rounded-full"
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {/* Active Range */}
                         <div
-                            ref={sliderRef}
-                            className="relative h-2 bg-black rounded-full"
-                            style={{ cursor: 'pointer' }}
-                        >
-                            {/* Active Range */}
-                            <div
-                                className="absolute h-2 bg-black rounded-full"
-                                style={{
-                                    left: `${minPercentage}%`,
-                                    width: `${maxPercentage - minPercentage}%`
-                                }}
-                            />
-                            {/* Min Handle */}
-                            <div
-                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-black rounded-full cursor-grab active:cursor-grabbing"
-                                style={{ left: `${minPercentage}%` }}
-                                onMouseDown={(e) => {
-                                    e.preventDefault()
-                                    handleMouseDown('min')
-                                }}
-                            />
-                            {/* Max Handle */}
-                            <div
-                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white border-2 border-black rounded-full cursor-grab active:cursor-grabbing"
-                                style={{ left: `${maxPercentage}%` }}
-                                onMouseDown={(e) => {
-                                    e.preventDefault()
-                                    handleMouseDown('max')
-                                }}
-                            />
-                        </div>
+                            className="absolute h-1.5 bg-black rounded-full"
+                            style={{
+                                left: `${minPercentage}%`,
+                                width: `${maxPercentage - minPercentage}%`
+                            }}
+                        />
+                        {/* Min Handle */}
+                        <div
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-black rounded-full cursor-grab active:cursor-grabbing"
+                            style={{ left: `${minPercentage}%` }}
+                            onMouseDown={(e) => {
+                                e.preventDefault()
+                                handleMouseDown('min')
+                            }}
+                        />
+                        {/* Max Handle */}
+                        <div
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white border-2 border-black rounded-full cursor-grab active:cursor-grabbing"
+                            style={{ left: `${maxPercentage}%` }}
+                            onMouseDown={(e) => {
+                                e.preventDefault()
+                                handleMouseDown('max')
+                            }}
+                        />
                     </div>
-
-                    {/* Current Range Display */}
-                    <div className="text-sm text-gray-600">
-                        Price: Rs. {formatPrice(minPrice)} - Rs. {formatPrice(maxPrice)}
-                    </div>
-                </>
-            )}
+                </div>
+            </div>
         </div>
     )
 }
