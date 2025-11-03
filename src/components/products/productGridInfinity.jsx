@@ -14,6 +14,7 @@ const mapApiProductToCard = (p) => ({
     categoryID: p.categoryID,
     minQty: p.minQty || 1,
     price: p.productPrice || 0,
+    sku: p.sku,
     inventory: p.inventory || 0,
 })
 
