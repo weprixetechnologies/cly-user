@@ -47,7 +47,7 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
     const fetchSuggestions = async (query) => {
         setLoading(true)
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://72.60.219.181:3300/api'
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
 
