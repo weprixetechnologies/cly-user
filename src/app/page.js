@@ -10,43 +10,24 @@ import ProductGrid from "@/components/products/productGrid";
 // export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
-  const baseUrl = 'https://api.cursiveletters.in/api';
-  try {
-    const [desktopRes, mobileRes] = await Promise.all([
-      fetch(`${baseUrl}/sliders/desktop`, { next: { revalidate: 60 } }),
-      fetch(`${baseUrl}/sliders/mobile`, { next: { revalidate: 60 } }),
-    ]);
+  const baseUrl =  'https://api.cursiveletters.in/api';
+  const [desktopRes, mobileRes] = await Promise.all([
+    fetch(`${baseUrl}/sliders/desktop`, { next: { revalidate: 60 } }),
+    fetch(`${baseUrl}/sliders/mobile`, { next: { revalidate: 60 } }),
+  ]);
 
-    if (!desktopRes.ok || !mobileRes.ok) {
-      return { desktop: [], mobile: [] };
-    }
-
-    // Check content type before parsing JSON
-    const desktopContentType = desktopRes.headers.get('content-type');
-    const mobileContentType = mobileRes.headers.get('content-type');
-
-    if (!desktopContentType?.includes('application/json') || !mobileContentType?.includes('application/json')) {
-      return { desktop: [], mobile: [] };
-    }
-
-    let desktopJson, mobileJson;
-    try {
-      desktopJson = await desktopRes.json();
-      mobileJson = await mobileRes.json();
-      console.log(desktopJson, mobileJson);
-    } catch (parseError) {
-      console.error('Error parsing slider JSON:', parseError);
-      return { desktop: [], mobile: [] };
-    }
-
-    return {
-      desktop: desktopJson?.data || [],
-      mobile: mobileJson?.data || [],
-    };
-  } catch (error) {
-    console.error('Error fetching sliders:', error);
+  if (!desktopRes.ok || !mobileRes.ok) {
     return { desktop: [], mobile: [] };
   }
+
+  const desktopJson = await desktopRes.json();
+  const mobileJson = await mobileRes.json();
+  console.log(desktopJson, mobileJson);
+
+  return {
+    desktop: desktopJson?.data || [],
+    mobile: mobileJson?.data || [],
+  };
 }
 
 async function fetchCategories() {
@@ -54,24 +35,9 @@ async function fetchCategories() {
   try {
     const res = await fetch(`${baseUrl}/categories`, { next: { revalidate: 1 } });
     if (!res.ok) return [];
-
-    // Check content type before parsing JSON
-    const contentType = res.headers.get('content-type');
-    if (!contentType?.includes('application/json')) {
-      return [];
-    }
-
-    let json;
-    try {
-      json = await res.json();
-    } catch (parseError) {
-      console.error('Error parsing categories JSON:', parseError);
-      return [];
-    }
-
+    const json = await res.json();
     return json?.categories || [];
-  } catch (error) {
-    console.error('Error fetching categories:', error);
+  } catch (_) {
     return [];
   }
 }
