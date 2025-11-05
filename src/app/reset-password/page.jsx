@@ -28,7 +28,7 @@ function ResetPasswordContent() {
 
     const verifyToken = async () => {
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletter.in/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
 
             const response = await fetch(`${apiBase}/password-reset/verify/${token}`)
             const data = await response.json()
@@ -70,7 +70,7 @@ function ResetPasswordContent() {
         setLoading(true)
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletter.in/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
 
             const response = await fetch(`${apiBase}/password-reset/reset`, {
                 method: 'POST',

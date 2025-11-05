@@ -49,7 +49,7 @@ export default function ProductDetail({ params }) {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`https://api.cursiveletter.in/api/products/${productID}`);
+                const response = await fetch(`https://api.cursiveletters.in/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
                 console.log(data.data.minQty);
