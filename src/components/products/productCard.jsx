@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
             </div>
             <div className='mt-[8px]'>
                 <div className="flex justify-between items-center">
-                    <p className='text-xs text-gray-500'>{product.category || 'Category Name'}</p>
+                    <p className='text-xs text-gray-500 line-clamp-1'>{product.category || 'Category Name'}</p>
                     <div className="text-xs text-gray-500 text-center ">
                         Min Qty: {quantity}
                     </div>
