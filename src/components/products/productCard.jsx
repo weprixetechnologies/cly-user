@@ -63,12 +63,16 @@ const ProductCard = ({ product }) => {
             <div className='mt-[8px]'>
                 <div className="flex justify-between items-center">
                     <p className='text-xs text-gray-500 line-clamp-1'>{product.category || 'Category Name'}</p>
-                    <div className="text-xs text-gray-500 text-center ">
+
+                </div>
+                <h3 className='text[16px] font-medium text-gray-900 line-clamp-1'>{product.name}</h3>
+                <div className='flex items-center justify-start gap-2'>
+
+                    <div className='text-xs text-gray-500 mt-0.5'>SKU: {product.sku || '—'}</div> |
+                    <div className="text-xs text-gray-500 text-center  ">
                         Min Qty: {quantity}
                     </div>
                 </div>
-                <h3 className='text[16px] font-medium text-gray-900 line-clamp-1'>{product.name}</h3>
-                <div className='text-xs text-gray-500 mt-0.5'>SKU: {product.sku || '—'}</div>
                 <div className='mt-1 flex items-center justify-between'>
                     <p className='text-sm font-semibold text-gray-700'>₹{Number(product.price || 0).toFixed(2)}</p>
                 </div>

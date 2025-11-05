@@ -121,12 +121,24 @@ export default function CategoriesPage() {
                                     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
                                         {/* Image Container */}
                                         <div className="relative h-64 overflow-hidden">
-                                            <Image
-                                                src={category.image || category.imgUrl || 'https://picsum.photos/400/300'}
-                                                alt={category.categoryName || 'Category'}
-                                                fill
-                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                            />
+                                            {(() => {
+                                                const normalize = (v) => typeof v === 'string' ? v.trim() : '';
+                                                const candidates = [normalize(category?.image), normalize(category?.imgUrl)];
+                                                let imageSrc = 'https://picsum.photos/400/300';
+                                                for (const c of candidates) {
+                                                    if (c && c !== 'null' && c !== 'undefined' && (c.startsWith('http') || c.startsWith('/'))) {
+                                                        imageSrc = c; break;
+                                                    }
+                                                }
+                                                return (
+                                                    <Image
+                                                        src={imageSrc}
+                                                        alt={category.categoryName || 'Category'}
+                                                        fill
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                );
+                                            })()}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                                             {/* Product Count Badge */}

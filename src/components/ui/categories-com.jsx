@@ -10,12 +10,17 @@ const CategoriesCom = ({ categories = [] }) => {
                     <Link href={`/categories/${category.categoryID}`} className='flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-300'>
                         <div className="relative overflow-hidden rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300">
                             <Image
-                                src={category.image || category.imgUrl || 'https://picsum.photos/200'}
-                                alt='categories'
+                                src={
+                                    category.image && category.image !== 'null' && category.image.trim() !== ''
+                                        ? category.image
+                                        : 'https://picsum.photos/200'
+                                }
+                                alt={category.categoryName || category.name || 'Category'}
                                 width={100}
                                 height={100}
-                                className='rounded-lg group-hover:scale-110 transition-transform duration-300'
+                                className="rounded-lg group-hover:scale-110 transition-transform duration-300"
                             />
+
                         </div>
                         <p className='text-sm max-w-[120px] text-center line-clamp-1 group-hover:text-blue-600 transition-colors duration-300' style={{ fontFamily: 'var(--font-montserrat)' }}>
                             {category.categoryName || category.name}

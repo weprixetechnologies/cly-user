@@ -174,19 +174,26 @@ export default function CategoryProducts({ params }) {
                                 </span>
                             </div>
                         </div>
-                        {category?.image && (
-                            <div className="hidden md:block ml-8">
-                                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl">
-                                    <Image
-                                        src={category.image}
-                                        alt={category.categoryName}
-                                        width={128}
-                                        height={128}
-                                        className="w-full h-full object-cover"
-                                    />
+                        {(() => {
+                            const normalize = (v) => typeof v === 'string' ? v.trim() : '';
+                            const candidate = normalize(category?.image) || normalize(category?.imgUrl);
+                            const valid = candidate && candidate !== 'null' && candidate !== 'undefined' && (candidate.startsWith('http') || candidate.startsWith('/'));
+                            const imageSrc = valid ? candidate : null;
+                            if (!imageSrc) return null;
+                            return (
+                                <div className="hidden md:block ml-8">
+                                    <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-2xl">
+                                        <Image
+                                            src={imageSrc}
+                                            alt={category?.categoryName || 'Category'}
+                                            width={128}
+                                            height={128}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 </div>
             </div>
