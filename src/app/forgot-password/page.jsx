@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
         setLoading(true)
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api'
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletter.in/api'
 
             const response = await fetch(`${apiBase}/password-reset/request`, {
                 method: 'POST',

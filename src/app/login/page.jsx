@@ -48,7 +48,7 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api';
+            const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletter.in/api';
             console.log('Attempting login with:', { emailID: emailID.trim(), device: 'web' });
 
             const response = await fetch(`${apiBase}/auth/login/user`, {

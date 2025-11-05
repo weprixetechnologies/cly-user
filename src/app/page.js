@@ -10,7 +10,7 @@ import ProductGrid from "@/components/products/productGrid";
 // export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
-  const baseUrl = 'http://localhost:3300/api';
+  const baseUrl = 'https://api.cursiveletter.in/api';
   const [desktopRes, mobileRes] = await Promise.all([
     fetch(`${baseUrl}/sliders/desktop`, { next: { revalidate: 60 } }),
     fetch(`${baseUrl}/sliders/mobile`, { next: { revalidate: 60 } }),
@@ -31,7 +31,7 @@ async function fetchSliders() {
 }
 
 async function fetchCategories() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3300/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletter.in/api';
   try {
     const res = await fetch(`${baseUrl}/categories`, { next: { revalidate: 1 } });
     if (!res.ok) return [];
