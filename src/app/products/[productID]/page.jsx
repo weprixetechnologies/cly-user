@@ -214,7 +214,7 @@ export default function ProductDetail({ params }) {
 
                     {/* Right: product info and CTA */}
                     <div>
-                        <marquee behavior="" direction="">Cursive Letters ✨ Special Offers 🎉 Free Shipping 🚚</marquee>
+                        <marquee behavior="" direction="">Cursive Letters ✨ Special Offers 🎉 </marquee>
                         <p className='text-sm text-gray-500 mt-2' style={{ fontFamily: 'var(--font-montserrat)' }}> {(Array.isArray(product.categories) ? product.categories : [product.categoryName]).filter(Boolean).map((c) => (
                             <span key={c} style={{ fontFamily: 'var(--font-montserrat)' }}>{c}</span>
                         ))}</p>
@@ -359,7 +359,7 @@ export default function ProductDetail({ params }) {
                 {/* Benefits row */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8'>
                     <Feature label="Quality Assured Products" />
-                    <Feature label="Fastrack & Free Shipping" />
+                    <Feature label="Fastrack Shipping" />
                     <Feature label="Cash on Delivery Available" />
                     <Feature label="Exclusive Products" />
                 </div>
