@@ -10,7 +10,7 @@ import ProductGrid from "@/components/products/productGrid";
 // export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
-  const baseUrl =  'https://api.cursiveletters.in/api';
+  const baseUrl = 'https://api.cursiveletters.in/api';
   const [desktopRes, mobileRes] = await Promise.all([
     fetch(`${baseUrl}/sliders/desktop`, { next: { revalidate: 60 } }),
     fetch(`${baseUrl}/sliders/mobile`, { next: { revalidate: 60 } }),
