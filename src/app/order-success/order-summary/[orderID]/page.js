@@ -362,6 +362,23 @@ export default function OrderSummary({ params }) {
                         </div> */}
 
 
+                        {/* Customer Comment */}
+                        {info.customer_comment && (
+                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center">
+                                        <svg className="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                    </div>
+                                    Your Comment
+                                </h3>
+                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <div className="text-sm text-amber-900 whitespace-pre-wrap">{info.customer_comment}</div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Order Remarks */}
                         {(info.remarks || (info.remarks_photos && info.remarks_photos.length > 0)) && (
                             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">

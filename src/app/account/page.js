@@ -315,6 +315,7 @@ export default function AccountPage() {
                                                 orderID: order.orderID,
                                                 orderStatus: order.orderStatus,
                                                 createdAt: order.createdAt,
+                                                customer_comment: order.customer_comment,
                                                 remarks: order.remarks,
                                                 remarks_photos: order.remarks_photos,
                                                 items: []
@@ -389,6 +390,14 @@ export default function AccountPage() {
                                                     View summary
                                                 </a>
                                             </div>
+
+                                            {/* Customer Comment */}
+                                            {orderGroup.customer_comment && (
+                                                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                                    <div className="text-xs font-medium text-amber-800 mb-1">Your Comment:</div>
+                                                    <div className="text-sm text-amber-800 whitespace-pre-wrap">{orderGroup.customer_comment}</div>
+                                                </div>
+                                            )}
 
                                             {/* Admin Remarks */}
                                             {(orderGroup.remarks || (orderGroup.remarks_photos && orderGroup.remarks_photos.length > 0)) && (
