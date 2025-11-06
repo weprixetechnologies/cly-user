@@ -4,6 +4,7 @@ import Header from "@/components/header/header";
 import Footer from "@/components/footer/Footer";
 import Preloader from "@/components/ui/preloader";
 import ReduxProvider from "@/components/providers/ReduxProvider";
+import DisableContextMenu from "@/components/providers/DisableContextMenu";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }) {
         className={`${ledger.variable} ${montserrat.variable} antialiased`}
       >
         <ReduxProvider>
+          <DisableContextMenu />
           <Preloader />
           <Header></Header>
           <main className="">
