@@ -32,6 +32,7 @@ const ProductGrid = ({ page = 1, limit = 20, search = '' }) => {
                 const url = new URL(baseUrl + '/products/list')
                 url.searchParams.set('page', String(page))
                 url.searchParams.set('limit', String(limit))
+                url.searchParams.set('status', 'active') // Only show active products to users
                 if (search) url.searchParams.set('search', search)
 
                 const res = await fetch(url.toString(), { cache: 'no-store' })

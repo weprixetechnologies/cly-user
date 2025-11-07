@@ -33,8 +33,8 @@ export default function ProductsPage() {
 
     const loadPriceRange = async () => {
         try {
-            // Fetch first page to determine price range
-            const response = await axiosInstance.get('/products/list?page=1&limit=100')
+            // Fetch first page to determine price range (only active products)
+            const response = await axiosInstance.get('/products/list?page=1&limit=100&status=active')
             if (response.data.success && response.data.data.products) {
                 const products = response.data.data.products
                 if (products.length > 0) {
@@ -180,14 +180,14 @@ export default function ProductsPage() {
 
                 {/* Products grid */}
                 <div className="mt-6">
-                    <ProductGridInfinity 
-                        key={`${searchQuery}|${categoryID}|${minPrice}|${maxPrice}|${refreshKey}`} 
-                        initialLimit={20} 
+                    <ProductGridInfinity
+                        key={`${searchQuery}|${categoryID}|${minPrice}|${maxPrice}|${refreshKey}`}
+                        initialLimit={20}
                         search={searchQuery}
                         categoryID={categoryID}
                         minPrice={minPrice}
                         maxPrice={maxPrice}
-                        visitShop={false} 
+                        visitShop={false}
                     />
                 </div>
             </div>

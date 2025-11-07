@@ -37,6 +37,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
             const url = new URL(baseUrl + '/products/list')
             url.searchParams.set('page', String(page))
             url.searchParams.set('limit', String(initialLimit))
+            url.searchParams.set('status', 'active') // Only show active products to users
             if (search) url.searchParams.set('search', search)
             if (categoryID) url.searchParams.set('categoryID', categoryID)
             if (minPrice) url.searchParams.set('minPrice', minPrice)

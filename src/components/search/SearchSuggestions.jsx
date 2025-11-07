@@ -51,7 +51,7 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
 
-            const response = await fetch(`${baseUrl}/products/list?search=${encodeURIComponent(query)}&limit=5`, {
+            const response = await fetch(`${baseUrl}/products/list?search=${encodeURIComponent(query)}&limit=5&status=active`, {
                 signal: controller.signal
             })
 

@@ -52,7 +52,7 @@ export default function ProductDetail({ params }) {
                 const response = await fetch(`https://api.cursiveletters.in/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
-                console.log(data.data.minQty);
+                console.log(data.minQty);
 
                 const productMinQty = data.data?.minQty || 1;
                 setMinQty(productMinQty);
