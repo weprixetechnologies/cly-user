@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import ProductCard from './productCard'
 
@@ -25,8 +25,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
     const [error, setError] = useState('')
     const [hasMore, setHasMore] = useState(true)
 
-    const observerRef = useRef(null)
-    const sentinelRef = useRef(null)
+    const limit = 50 // Load 50 products each time
 
     const fetchPage = useCallback(async () => {
         if (loading) return
@@ -36,7 +35,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
             const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
             const url = new URL(baseUrl + '/products/list')
             url.searchParams.set('page', String(page))
-            url.searchParams.set('limit', String(initialLimit))
+            url.searchParams.set('limit', String(limit))
             url.searchParams.set('status', 'active') // Only show active products to users
             if (search) url.searchParams.set('search', search)
             if (categoryID) url.searchParams.set('categoryID', categoryID)
@@ -64,7 +63,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
                     const capTotal = typeof maxTotal === 'number' ? Math.min(total, maxTotal) : total
                     nextHasMore = finalList.length < capTotal
                 } else {
-                    nextHasMore = items.length === initialLimit
+                    nextHasMore = items.length === limit
                 }
 
                 // Update hasMore state
@@ -78,7 +77,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         } finally {
             setLoading(false)
         }
-    }, [page, initialLimit, search, categoryID, minPrice, maxPrice, maxTotal, outOfStock])
+    }, [page, limit, search, categoryID, minPrice, maxPrice, maxTotal, outOfStock])
 
     // Initial load / filter changes
     useEffect(() => {
@@ -86,41 +85,18 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         setProducts([])
         setPage(1)
         setHasMore(true)
-    }, [search, categoryID, minPrice, maxPrice, initialLimit, outOfStock])
+    }, [search, categoryID, minPrice, maxPrice, outOfStock])
 
     useEffect(() => {
         fetchPage()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page])
 
-    // Intersection Observer to trigger loading more
-    useEffect(() => {
-        if (!sentinelRef.current) return
-        if (!hasMore) {
-            // Don't observe if there's no more data to load
-            if (observerRef.current) {
-                observerRef.current.disconnect()
-                observerRef.current = null
-            }
-            return
+    const handleLoadMore = () => {
+        if (!loading && hasMore) {
+            setPage(prev => prev + 1)
         }
-
-        if (observerRef.current) observerRef.current.disconnect()
-        observerRef.current = new IntersectionObserver((entries) => {
-            const first = entries[0]
-            if (first.isIntersecting && !loading && hasMore) {
-                setPage(prev => prev + 1)
-            }
-        }, { rootMargin: '200px' })
-
-        observerRef.current.observe(sentinelRef.current)
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect()
-                observerRef.current = null
-            }
-        }
-    }, [loading, hasMore])
+    }
 
     return (
         <div>
@@ -132,9 +108,18 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
                     <ProductCard key={product.id} product={product} />
                 ))}
             </div>
-            <div ref={sentinelRef} />
             {loading && (
                 <div className='py-6 text-center text-sm text-gray-500'>Loading…</div>
+            )}
+            {hasMore && !loading && (
+                <div className='py-6 flex justify-center'>
+                    <button
+                        onClick={handleLoadMore}
+                        className='px-6 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed'
+                    >
+                        LOAD MORE
+                    </button>
+                </div>
             )}
             {!hasMore && products.length > 0 && (
                 <div className='py-6 text-center text-xs text-gray-400'>No more products</div>

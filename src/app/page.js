@@ -1,13 +1,12 @@
-import ProductGridInfinity from "@/components/products/productGridInfinity";
 import Slider from "@/components/slider";
 import CategoriesCom from "@/components/ui/categories-com";
 import Headings from "@/components/ui/headings";
 import Image from "next/image";
 import aboutbanner from '../../public/ibs.jpg'
-import ProductGrid from "@/components/products/productGrid";
-// import ProductGrid from "@/components/products/productGrid";
+import ProductGridHome from "@/components/products/productGridHome";
 
-// export const revalidate = 60; // ISR: revalidate every 60 seconds
+
+export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
   const baseUrl = 'https://api.cursiveletters.in/api';
@@ -44,10 +43,32 @@ async function fetchCategories() {
   }
 }
 
+async function fetchProducts(limit = 50, maxTotal = 100, outOfStock = false) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  try {
+    const url = new URL(`${baseUrl}/products/list`);
+    url.searchParams.set('page', '1');
+    url.searchParams.set('limit', String(limit));
+    url.searchParams.set('status', 'active');
+    url.searchParams.set('outOfStock', String(outOfStock));
+
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const products = json?.data?.products || [];
+
+    // Limit to maxTotal if specified
+    return typeof maxTotal === 'number' ? products.slice(0, maxTotal) : products;
+  } catch (_) {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [sliderData, categories] = await Promise.all([
+  const [sliderData, categories, products] = await Promise.all([
     fetchSliders(),
     fetchCategories(),
+    fetchProducts(50, 100, false),
   ]);
   const { desktop, mobile } = sliderData;
 
@@ -63,12 +84,12 @@ export default async function Home() {
         <ProductGrid initialLimit={8} maxTotal={8} />
       </div>
       <div className="h-7"></div> */}
-      <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
       <div className="md:px-15 px-4">
-        <ProductGridInfinity initialLimit={8} maxTotal={100} outOfStock={false} />
+        <ProductGridHome products={products} visitShop={true} />
       </div>
+      <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
     </div>
   );
 }
