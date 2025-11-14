@@ -4,6 +4,7 @@ import Headings from "@/components/ui/headings";
 import Image from "next/image";
 import aboutbanner from '../../public/ibs.jpg'
 import ProductGridHome from "@/components/products/productGridHome";
+import VisitorTracker from "@/components/visitor-tracker";
 
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
@@ -74,6 +75,7 @@ export default async function Home() {
 
   return (
     <div>
+      <VisitorTracker />
       <Slider desktopImages={desktop.map(d => d.imgUrl)} mobileImages={mobile.map(m => m.imgUrl)} />
 
       <Headings subHeading="Shop by Categories" heading="What You Need" />
