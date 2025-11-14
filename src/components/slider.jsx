@@ -159,14 +159,26 @@ const Slider = ({ desktopImages = [], mobileImages = [] }) => {
             >
                 <div className="flex gap-4 px-6">
                     {extendedSlides.length === 0 ? (
-                        <div data-slide className="shrink-0 rounded-xl bg-gray-200" style={{ width: '80%', height: '360px' }} />
+                        <div
+                            data-slide
+                            className="shrink-0 rounded-xl bg-gray-200"
+                            style={{
+                                width: '80%',
+                                height: isMobile ? 'calc(80vw * 300 / 243)' : '360px',
+                                aspectRatio: isMobile ? '243 / 300' : undefined
+                            }}
+                        />
                     ) : (
                         extendedSlides.map((s, idx) => (
                             <div
                                 key={`${s.id}-${idx}`}
                                 data-slide
                                 className="shrink-0 rounded-xl overflow-hidden border border-gray-200 bg-white"
-                                style={{ width: '80%', height: '360px' }}
+                                style={{
+                                    width: '80%',
+                                    height: isMobile ? 'calc(80vw * 300 / 243)' : '360px',
+                                    aspectRatio: isMobile ? '243 / 300' : undefined
+                                }}
                             >
                                 <img
                                     src={s.url}
