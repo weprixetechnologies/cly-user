@@ -30,8 +30,8 @@ const ProductGridHome = ({ products = [], visitShop = true }) => {
             </div>
             {visitShop && (
                 <div className='py-6 flex justify-center'>
-                    <Link href="/products" className='px-6 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition'>
-                        Visit Shop
+                    <Link href="/products" className='px-6 py-2 rounded-md bg-black text-white hover:bg-gray-800 transition text-2xl'>
+                        Visit Shop for More Range of Products
                     </Link>
                 </div>
             )}

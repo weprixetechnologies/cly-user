@@ -22,7 +22,7 @@ const montserrat = Montserrat({
 
 export const metadata = {
   title: "Cursive Letters Ly",
-  description: "Shop for Beautiful Cursive Letters at Cursive Letters. We offer a wide range of Cursive Letters for all your needs. Buy Cursive Letters online at the best price. Cursive Letters are a great way to add a personal touch to your home or office. Cursive Letters are a great way to add a personal touch to your home or office.",
+  description: "Welcome to CLY, India's largest stationary point for imported items. We are your one-stop destination for quality stationary products, offering a wide range of imported goods that meet the highest standards of quality and reliability.",
 };
 
 export default function RootLayout({ children }) {
