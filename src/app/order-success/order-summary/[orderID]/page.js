@@ -57,7 +57,7 @@ export default function OrderSummary({ params }) {
 
     // Calculate subtotal based on accepted quantities (for partial acceptance)
     const subtotal = data.items.reduce((s, it) => {
-                const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
+        const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
         const acceptedQuantity = (it.accepted_units || 0);
         const requestedQuantity = (it.requested_units || it.units || 0);
         // Use accepted quantity if available, otherwise use requested quantity
@@ -65,7 +65,9 @@ export default function OrderSummary({ params }) {
         return s + (unitPrice * quantity);
     }, 0);
 
-    const total = subtotal; // No delivery fee
+    // Get shipping charge from order info (same for all items in an order)
+    const shippingCharge = Number(info.shipping_charge || 0);
+    const total = subtotal + shippingCharge;
 
     // Calculate payment totals
     const totalPaid = data.payments.reduce((sum, payment) => sum + Number(payment.paid_amount || 0), 0);
@@ -275,6 +277,12 @@ export default function OrderSummary({ params }) {
                                     <span className="text-slate-600">Subtotal</span>
                                     <span className="font-semibold text-slate-900">₹{subtotal.toFixed(2)}</span>
                                 </div>
+                                {shippingCharge > 0 && (
+                                    <div className="flex justify-between items-center py-2">
+                                        <span className="text-slate-600">Shipping Charges</span>
+                                        <span className="font-semibold text-slate-900">₹{shippingCharge.toFixed(2)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-slate-600">Amount Paid</span>
                                     <span className="font-semibold text-green-600">

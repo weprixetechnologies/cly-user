@@ -12,7 +12,7 @@ const SelectPayment = ({ onSelect }) => {
         {
             id: 'cod',
             name: 'Advance Payment',
-            description: 'Pay when your order arrives',
+            description: 'Payment to be made before dispatch of order',
             icon: <HiCash className="text-green-600" size={24} />,
             available: true
         },

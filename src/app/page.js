@@ -5,6 +5,7 @@ import Image from "next/image";
 import aboutbanner from '../../public/ibs.jpg'
 import ProductGridHome from "@/components/products/productGridHome";
 import VisitorTracker from "@/components/visitor-tracker";
+import FeaturedProducts from "@/components/products/FeaturedProducts";
 
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
@@ -65,11 +66,28 @@ async function fetchProducts(limit = 50, maxTotal = 100, outOfStock = false) {
   }
 }
 
+async function fetchFeaturedProducts(limit = 20) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  try {
+    const url = new URL(`${baseUrl}/products/featured`);
+    url.searchParams.set('limit', String(limit));
+    // console.log('fetching featured products', url.toString());
+
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json?.data || [];
+  } catch (_) {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [sliderData, categories, products] = await Promise.all([
+  const [sliderData, categories, products, featuredProducts] = await Promise.all([
     fetchSliders(),
     fetchCategories(),
     fetchProducts(50, 100, false),
+    fetchFeaturedProducts(20),
   ]);
   const { desktop, mobile } = sliderData;
 
@@ -80,6 +98,18 @@ export default async function Home() {
 
       <Headings subHeading="Shop by Categories" heading="What You Need" />
       <CategoriesCom categories={categories} />
+
+      {/* Featured Products Section */}
+      {featuredProducts.length > 0 && (
+        <>
+          <div className="h-7"></div>
+          <Headings subHeading="Handpicked for You" heading="Featured Products" />
+          <div className="md:px-15 px-4">
+            <FeaturedProducts products={featuredProducts} />
+          </div>
+        </>
+      )}
+
       {/* <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" /> */}
       {/* <div className="h-7"></div> */}
       {/* <div className="md:px-15 px-4">
