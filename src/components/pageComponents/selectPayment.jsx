@@ -11,7 +11,7 @@ const SelectPayment = ({ onSelect }) => {
     const paymentMethods = [
         {
             id: 'cod',
-            name: 'Cash on Delivery',
+            name: 'Advance Payment',
             description: 'Pay when your order arrives',
             icon: <HiCash className="text-green-600" size={24} />,
             available: true

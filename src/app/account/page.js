@@ -359,9 +359,9 @@ export default function AccountPage() {
                                                             </div>
                                                         </div>
                                                         <div className="text-sm font-semibold text-gray-900 text-right">
-                                                            <p className="text-xs text-gray-500">Unit Price:    {item.pItemPrice || item.productPrice || 0}</p>
+                                                            <p className="text-xs text-gray-500">Unit Price: {item.final_price ?? item.pItemPrice ?? item.productPrice ?? 0}</p>
                                                             ₹{(() => {
-                                                                const unitPrice = Number(item.pItemPrice || item.productPrice || 0);
+                                                                const unitPrice = Number(item.final_price ?? item.pItemPrice ?? item.productPrice ?? 0);
                                                                 const requestedQty = Number(item.requested_units || item.units || 0);
                                                                 const acceptedQty = Number(item.accepted_units || 0);
                                                                 const qty = orderGroup.orderStatus === 'accepted' ? acceptedQty : requestedQty;
@@ -376,7 +376,7 @@ export default function AccountPage() {
                                             <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                                                 <div className="text-sm font-semibold text-gray-900">
                                                     Total: ₹{orderGroup.items.reduce((sum, item) => {
-                                                        const unitPrice = Number(item.pItemPrice || item.productPrice || 0);
+                                                        const unitPrice = Number(item.final_price ?? item.pItemPrice ?? item.productPrice ?? 0);
                                                         const requestedQty = Number(item.requested_units || item.units || 0);
                                                         const acceptedQty = Number(item.accepted_units || 0);
                                                         const qty = orderGroup.orderStatus === 'accepted' ? acceptedQty : requestedQty;

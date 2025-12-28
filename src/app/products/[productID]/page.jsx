@@ -360,7 +360,7 @@ export default function ProductDetail({ params }) {
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8'>
                     <Feature label="Quality Assured Products" />
                     <Feature label="Fastrack Shipping" />
-                    <Feature label="Cash on Delivery Available" />
+                    <Feature label="Advance Payment Available" />
                     <Feature label="Exclusive Products" />
                 </div>
 
