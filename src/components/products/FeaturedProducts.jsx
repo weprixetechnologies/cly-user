@@ -22,6 +22,8 @@ const FeaturedProducts = ({ products = [] }) => {
     const [isMouseDown, setIsMouseDown] = useState(false)
     const [startX, setStartX] = useState(0)
     const [scrollLeft, setScrollLeft] = useState(0)
+    const [isHovered, setIsHovered] = useState(false)
+    const autoSlideRef = useRef(null)
 
     const mappedProducts = (products || []).map(mapApiProductToCard)
 
@@ -61,8 +63,51 @@ const FeaturedProducts = ({ products = [] }) => {
         el.scrollTo({ left: el.scrollLeft + delta * scrollAmount, behavior: 'smooth' })
     }, [])
 
+    // Auto-slide functionality
+    useEffect(() => {
+        if (mappedProducts.length <= 3) return // Don't auto-slide if all products fit on screen
+
+        const startAutoSlide = () => {
+            if (autoSlideRef.current) {
+                clearInterval(autoSlideRef.current)
+            }
+            autoSlideRef.current = setInterval(() => {
+                if (!isHovered && !isMouseDown) {
+                    const el = containerRef.current
+                    if (!el) return
+
+                    const scrollAmount = 300
+                    const maxScroll = el.scrollWidth - el.clientWidth
+                    const currentScroll = el.scrollLeft
+
+                    // If we've reached the end, scroll back to the beginning
+                    if (currentScroll >= maxScroll - 10) {
+                        el.scrollTo({ left: 0, behavior: 'smooth' })
+                    } else {
+                        el.scrollTo({
+                            left: Math.min(currentScroll + scrollAmount, maxScroll),
+                            behavior: 'smooth'
+                        })
+                    }
+                }
+            }, 2000) // Auto-slide every 2 seconds
+        }
+
+        startAutoSlide()
+
+        return () => {
+            if (autoSlideRef.current) {
+                clearInterval(autoSlideRef.current)
+            }
+        }
+    }, [mappedProducts.length, isHovered, isMouseDown])
+
     return (
-        <div className="relative py-4">
+        <div
+            className="relative py-4"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             {/* Navigation Buttons */}
             {mappedProducts.length > 3 && (
                 <>
