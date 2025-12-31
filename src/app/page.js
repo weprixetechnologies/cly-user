@@ -11,7 +11,7 @@ import FeaturedProducts from "@/components/products/FeaturedProducts";
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
-  const baseUrl = 'https://api.cursiveletters.in/api';
+  const baseUrl = 'http://localhost:9878/api';
   const [desktopRes, mobileRes] = await Promise.all([
     fetch(`${baseUrl}/sliders/desktop`, { cache: 'no-store' }),
     fetch(`${baseUrl}/sliders/mobile`, { cache: 'no-store' }),
@@ -32,7 +32,7 @@ async function fetchSliders() {
 }
 
 async function fetchCategories() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
   try {
     const res = await fetch(`${baseUrl}/categories`, { next: { revalidate: 1 } });
     if (!res.ok) return [];
@@ -46,7 +46,7 @@ async function fetchCategories() {
 }
 
 async function fetchProducts(limit = 50, maxTotal = 100, outOfStock = false) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
   try {
     const url = new URL(`${baseUrl}/products/list`);
     url.searchParams.set('page', '1');
@@ -67,7 +67,7 @@ async function fetchProducts(limit = 50, maxTotal = 100, outOfStock = false) {
 }
 
 async function fetchFeaturedProducts(limit = 20) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
   try {
     const url = new URL(`${baseUrl}/products/featured`);
     url.searchParams.set('limit', String(limit));

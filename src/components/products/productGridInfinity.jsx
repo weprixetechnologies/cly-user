@@ -32,7 +32,7 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
         setLoading(true)
         setError('')
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api'
             const url = new URL(baseUrl + '/products/list')
             url.searchParams.set('page', String(page))
             url.searchParams.set('limit', String(limit))

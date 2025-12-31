@@ -9,7 +9,7 @@ const redirectToLogin = () => {
     window.location.href = '/login';
 };
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+const baseURL = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
 
 const axiosInstance = axios.create({
     baseURL,

@@ -147,9 +147,6 @@ export default function Signup() {
                         <p className="mt-2 text-center text-sm text-gray-600">
                             We've sent a 6-digit OTP to <strong>{formData.emailID}</strong>
                         </p>
-                        <p className="mt-1 text-center text-xs text-gray-500">
-                            OTP expires in 1 hour
-                        </p>
                     </div>
                     <div className="mt-8 space-y-6">
                         <div>
