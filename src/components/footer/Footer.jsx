@@ -7,7 +7,7 @@ import { FaFacebook, FaInstagram, FaTwitter, FaYoutube, FaLinkedin } from 'react
 
 const Footer = () => {
     const [contacts, setContacts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         // Add delay to let page load first
@@ -229,19 +229,19 @@ const Footer = () => {
                                     {/* Head Office Section */}
                                     {(() => {
                                         const headOfficeContacts = contacts
-                                            .filter(contact => 
+                                            .filter(contact =>
                                                 (contact.type === 'headquarter_address' || contact.type === 'headquarter_phone') &&
-                                                contact.value && 
+                                                contact.value &&
                                                 contact.value.trim() !== ''
                                             )
                                             .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
                                         const regularContacts = contacts
-                                            .filter(contact => 
+                                            .filter(contact =>
                                                 contact.type !== 'social_media' &&
                                                 contact.type !== 'headquarter_address' &&
                                                 contact.type !== 'headquarter_phone' &&
-                                                contact.value && 
+                                                contact.value &&
                                                 contact.value.trim() !== ''
                                             )
                                             .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
