@@ -146,6 +146,11 @@ export default function ProductDetail({ params }) {
     const gallery = Array.isArray(product.galleryImages) ? product.galleryImages : [];
     const allImages = [product.featuredImages, ...gallery].filter(Boolean);
 
+    const isVideoUrl = (url) => {
+        if (typeof url !== 'string') return false;
+        const base = url.split('?')[0];
+        return /\.(mp4|webm|ogg|mov|m4v)$/i.test(base);
+    };
 
     const currentPrice = Number(product.productPrice || 0);
     const mrpCandidate = [product.mrp, product.productMRP, product.compareAtPrice, product.originalPrice]
@@ -163,30 +168,62 @@ export default function ProductDetail({ params }) {
                             {allImages.length === 0 && (
                                 <div className='border border-gray-200 rounded-lg w-20 h-20' />
                             )}
-                            {allImages.map((src, idx) => (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    key={idx}
-                                    src={src}
-                                    alt={`thumb-${idx}`}
-                                    onClick={() => setSelectedImage(src)}
-                                    style={{
-                                        width: 80,
-                                        height: 80,
-                                        objectFit: 'cover',
-                                        borderRadius: 8,
-                                        border: selectedImage === src ? '2px solid #111' : '1px solid #eee',
-                                        cursor: 'pointer'
-                                    }}
-                                />
-                            ))}
+                            {allImages.map((src, idx) => {
+                                const isVideo = isVideoUrl(src);
+                                const commonStyle = {
+                                    width: 80,
+                                    height: 80,
+                                    objectFit: 'cover',
+                                    borderRadius: 8,
+                                    border: selectedImage === src ? '2px solid #111' : '1px solid #eee',
+                                    cursor: 'pointer'
+                                };
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        onClick={() => setSelectedImage(src)}
+                                        style={commonStyle}
+                                        className="overflow-hidden"
+                                    >
+                                        {isVideo ? (
+                                            <video
+                                                src={src}
+                                                className="w-full h-full object-cover"
+                                                muted
+                                                loop
+                                                playsInline
+                                            />
+                                        ) : (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={src}
+                                                alt={`thumb-${idx}`}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* Main image */}
                         <div className='relative w-full aspect-square border border-gray-200 rounded-xl overflow-hidden bg-gray-50'>
                             {selectedImage ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={selectedImage} alt={product.productName} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                isVideoUrl(selectedImage) ? (
+                                    <video
+                                        src={selectedImage}
+                                        controls
+                                        className="w-full h-full object-contain bg-black"
+                                    />
+                                ) : (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={selectedImage}
+                                        alt={product.productName}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                    />
+                                )
                             ) : (
                                 <div className='flex items-center justify-center h-full text-gray-500'>No image</div>
                             )}
@@ -195,19 +232,38 @@ export default function ProductDetail({ params }) {
                         {/* Mobile thumbnails - horizontal scroll */}
                         <div className='lg:hidden mt-4'>
                             <div className='flex gap-2 overflow-x-auto pb-2'>
-                                {allImages.map((src, idx) => (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        key={idx}
-                                        src={src}
-                                        alt={`thumb-${idx}`}
-                                        onClick={() => setSelectedImage(src)}
-                                        className={`w-16 h-16 object-cover rounded-lg cursor-pointer transition-all duration-200 flex-shrink-0 ${selectedImage === src
-                                            ? 'border-2 border-gray-900 ring-2 ring-gray-200'
-                                            : 'border border-gray-200 hover:border-gray-400'
-                                            }`}
-                                    />
-                                ))}
+                                {allImages.map((src, idx) => {
+                                    const isVideo = isVideoUrl(src);
+                                    const baseClasses = 'w-16 h-16 rounded-lg cursor-pointer transition-all duration-200 flex-shrink-0';
+                                    const activeClasses = selectedImage === src
+                                        ? 'border-2 border-gray-900 ring-2 ring-gray-200'
+                                        : 'border border-gray-200 hover:border-gray-400';
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setSelectedImage(src)}
+                                            className={`${baseClasses} ${activeClasses} overflow-hidden`}
+                                        >
+                                            {isVideo ? (
+                                                <video
+                                                    src={src}
+                                                    className="w-full h-full object-cover"
+                                                    muted
+                                                    loop
+                                                    playsInline
+                                                />
+                                            ) : (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={src}
+                                                    alt={`thumb-${idx}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
