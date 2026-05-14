@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from '../../utils/axiosInstance';
 import { toast } from 'react-toastify';
+import { setAuthTokens, setUserId } from '../../utils/cookieUtil';
 
 export default function Signup() {
     const router = useRouter();
@@ -119,8 +120,19 @@ export default function Signup() {
             });
 
             if (registerResponse.data.success) {
-                toast.success('Account created successfully! Please wait for admin approval.');
-                router.push('/login');
+                const { tokens, user } = registerResponse.data;
+                
+                // Set authentication tokens and user ID
+                if (tokens?.accessToken && tokens?.refreshToken) {
+                    setAuthTokens(tokens.accessToken, tokens.refreshToken);
+                    if (user?.uid) setUserId(user.uid);
+                    
+                    toast.success('Account created successfully! Welcome to Cursive Letters.');
+                    router.push('/account');
+                } else {
+                    toast.success('Account created successfully! Please sign in.');
+                    router.push('/login');
+                }
             }
         } catch (error) {
             const message = error.response?.data?.message || 'Registration failed';
@@ -224,7 +236,7 @@ export default function Signup() {
                         Create your account
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                        Your account will be reviewed by admin before activation
+                        Create your account to start shopping
                     </p>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
