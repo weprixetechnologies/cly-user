@@ -70,20 +70,13 @@ const Page = () => {
         }
     }
 
-    // Check authentication
+    // Check authentication (but do not redirect on load anymore)
     const checkAuthentication = () => {
         const accessToken = getCookie('_at');
         const uid = getCookie('uid');
 
         if (!accessToken || !uid) {
             setIsAuthenticated(false);
-            setRedirecting(true);
-
-            // Redirect to login after 1 second
-            setTimeout(() => {
-                router.push('/login');
-            }, 1000);
-
             return false;
         }
 
@@ -97,10 +90,8 @@ const Page = () => {
             setLoading(true);
             setError(null);
 
-            // Check authentication first
-            if (!checkAuthentication()) {
-                return;
-            }
+            // Set authentication state
+            checkAuthentication();
 
             const cartData = await fetchCart();
             setCart(cartData.cart);
@@ -108,13 +99,9 @@ const Page = () => {
         } catch (err) {
             console.error('Error loading cart:', err);
 
-            // Check if it's an authentication error
+            // Check if it's an authentication error (shouldn't happen now since we fallback to localStorage)
             if (err.message?.includes('not authenticated') || err.message?.includes('401')) {
                 setIsAuthenticated(false);
-                setRedirecting(true);
-                setTimeout(() => {
-                    router.push('/login');
-                }, 1000);
                 return;
             }
 
@@ -127,6 +114,14 @@ const Page = () => {
         setPlaceError('')
         // First click: move to address/payment confirmation step
         if (!confirmAddress) {
+            if (!isAuthenticated) {
+                // If not authenticated, force login before checkout
+                import('react-toastify').then(mod => {
+                    mod.toast.info('Please login to proceed to checkout');
+                });
+                router.push('/login');
+                return;
+            }
             setConfirmAddress(true)
             setCurrentStep(2)
             return
@@ -208,28 +203,10 @@ const Page = () => {
         );
     }
 
-    // Show redirecting message for unauthenticated users
-    if (redirecting || isAuthenticated === false) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 text-center">
-                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-auto">
-                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
-                    <p className="text-gray-600 mb-6">
-                        You need to be logged in to access your cart. Redirecting you to the login page...
-                    </p>
-                    <div className="flex items-center justify-center space-x-2 text-blue-600">
-                        <ClipLoader color="#3B82F6" size={20} />
-                        <span className="text-sm font-medium">Redirecting in 1 second</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // We no longer block unauthenticated users from viewing the cart
+    // if (redirecting || isAuthenticated === false) {
+    //     return ( ... )
+    // }
 
     if (error) {
         return (

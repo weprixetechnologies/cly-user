@@ -2,6 +2,7 @@
 import { useEffect, useState, use } from 'react';
 import Image from 'next/image';
 import axiosInstance from '@/utils/axiosInstance';
+import { addToCart as addToCartService } from '@/utils/cartService';
 import { IoIosCall } from "react-icons/io";
 import { FiShare2 } from "react-icons/fi";
 
@@ -123,20 +124,21 @@ export default function ProductDetail({ params }) {
             return;
         }
 
-        const uid = typeof window !== 'undefined' ? localStorage.getItem('uid') : null;
-
         try {
-            await axiosInstance.post(`/cart/${uid}/add`, {
+            await addToCartService({
                 productID: product.productID,
                 productName: product.productName,
                 featuredImage: product.featuredImages,
-                boxQty: 0,
-                units: quantity
+                boxQty: product.boxQty || 0,
+                units: quantity,
+                productPrice: Number(product.productPrice || 0),
+                minQty: minQty,
+                discount: Number(product.pricing?.discount) || 0
             });
             alert('Added to cart');
         } catch (error) {
             console.error('Error adding to cart:', error);
-            alert('Please Login to Add To Cart');
+            alert('Error adding to cart. Please try again.');
         }
     };
 

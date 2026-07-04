@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import api from '@/utils/axiosInstance'
 import { setAuthTokens, setUserId } from '@/utils/cookieUtil'
 import { toast } from 'react-toastify'
+import { syncLocalCartToBackend } from '@/utils/cartService'
 
 export default function LoginPage() {
     const router = useRouter()
@@ -92,6 +93,13 @@ export default function LoginPage() {
             // Clear any existing errors and show success
             setError('')
             toast.success('Login successful! Redirecting...')
+
+            // Sync any local cart items to the backend before redirecting
+            try {
+                await syncLocalCartToBackend(uid);
+            } catch (syncError) {
+                console.error('Failed to sync guest cart during login:', syncError);
+            }
 
             // Small delay to show success message
             setTimeout(() => {
