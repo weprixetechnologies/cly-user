@@ -162,7 +162,7 @@ const CartItems = ({ cart, onItemRemoved, onCartUpdated }) => {
                                     {/* <p className='text-xs font-medium text-secondary-text-deep'>{i.brand}</p> */}
                                     <p className='text-sm font-medium line-clamp-1 md:text-[16px]'>{i.productName}</p>
                                     <div className="cart-pricing flex gap-2 items-center">
-                                        <p className="text-sm md:text-lg font-medium">₹{Number(i.productPrice || 100).toFixed(2)}</p>
+                                        <p className="text-sm md:text-lg font-medium">₹{Number(i.productPrice || 0).toFixed(2)}</p>
                                         {/* <p className="text-xs md:text-sm font-light text-gray-500">
                                             {i.inventory !== undefined ? `Stock: ${i.inventory}` : '(Pricing to be calculated)'}
                                         </p> */}

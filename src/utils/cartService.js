@@ -79,7 +79,7 @@ export const calculateCartDetails = (cartItems) => {
 
     // Calculate pricing using actual product prices from backend
     const subtotal = cartItems.reduce((sum, item) => {
-        const itemPrice = item.productPrice || 100; // Use actual price from product data
+        const itemPrice = item.productPrice || 0; // Use actual price from product data
         const quantity = item.units || 0;
         return sum + (itemPrice * quantity);
     }, 0);

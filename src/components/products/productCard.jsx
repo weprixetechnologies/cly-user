@@ -28,6 +28,7 @@ const ProductCard = ({ product }) => {
                 featuredImage: product.image,
                 boxQty: 0,
                 units: quantity,
+                productPrice: Number(product.price || 0),
             })
             toast.success('Added to cart')
         } catch (e) {
