@@ -2,21 +2,42 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import api from '@/utils/axiosInstance';
 
 export default function CategoryProducts({ params }) {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center"><div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto"></div></div>}>
+            <CategoryProductsContent params={params} />
+        </Suspense>
+    );
+}
+
+function CategoryProductsContent({ params }) {
     // Unwrap params if it's a Promise (Next.js newer behavior), fallback to direct access for compatibility
     const resolvedParams = typeof params?.then === 'function' ? React.use(params) : params;
     const { categoryID } = resolvedParams || {};
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const [data, setData] = useState({ products: [], pagination: {} });
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+    
+    // Read initial page from URL, defaulting to 1
+    const pageFromUrl = parseInt(searchParams?.get('page')) || 1;
+    const [currentPage, setCurrentPage] = useState(pageFromUrl);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Update local state if URL changes (e.g. user clicks Back button)
+    useEffect(() => {
+        const currentUrlPage = parseInt(searchParams?.get('page')) || 1;
+        if (currentUrlPage !== currentPage) {
+            setCurrentPage(currentUrlPage);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         fetchCategoryAndProducts();
@@ -50,6 +71,7 @@ export default function CategoryProducts({ params }) {
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
+        router.push(`${pathname}?page=${page}`, { scroll: false });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
