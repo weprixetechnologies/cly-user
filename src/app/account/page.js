@@ -26,11 +26,15 @@ export default function AccountPage() {
 
     useEffect(() => {
         const cookieUid = getCookie('uid');
-        setUid(cookieUid || null);
-    }, []);
+        if (!cookieUid) {
+            router.push('/login');
+        } else {
+            setUid(cookieUid);
+        }
+    }, [router]);
 
     useEffect(() => {
-        if (!uid) { setLoading(false); return; }
+        if (!uid) return;
         (async () => {
             try {
                 setLoading(true);
@@ -133,21 +137,10 @@ export default function AccountPage() {
         router.push('/logout');
     };
 
-    if (loading) {
+    if (loading || !uid) {
         return (
             <div className="min-h-screen grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50">
                 <div className="text-gray-700">Loading your account…</div>
-            </div>
-        );
-    }
-
-    if (!uid) {
-        return (
-            <div className="min-h-screen grid place-items-center p-6 text-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50">
-                <div className="bg-white/80 backdrop-blur border border-orange-100 rounded-2xl px-8 py-10 shadow-lg">
-                    <div className="text-2xl font-semibold mb-2 text-gray-900">Please login</div>
-                    <a href="/login" className="inline-block px-5 py-2.5 rounded-lg bg-[#EF6A22] text-white hover:opacity-90 transition">Sign In</a>
-                </div>
             </div>
         );
     }

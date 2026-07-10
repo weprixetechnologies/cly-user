@@ -66,6 +66,12 @@ const clearLocalCart = () => {
     }
 };
 
+export const notifyCartUpdated = () => {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+    }
+};
+
 // Calculate cart totals and details
 export const calculateCartDetails = (cartItems) => {
     if (!cartItems || cartItems.length === 0) {
@@ -86,9 +92,7 @@ export const calculateCartDetails = (cartItems) => {
 
     const deliveryFee = 0; // No delivery fee
     const total = subtotal; // Total equals subtotal
-    const itemCount = cartItems.reduce((count, item) => {
-        return count + (item.units || 0);
-    }, 0);
+    const itemCount = cartItems.length;
 
     return {
         subtotal,
@@ -145,6 +149,7 @@ export const addToCart = async (item) => {
             }
             
             saveLocalCart(localCart);
+            notifyCartUpdated();
             return {
                 cart: localCart,
                 cartDetail: calculateCartDetails(localCart),
@@ -157,6 +162,7 @@ export const addToCart = async (item) => {
 
         // Calculate cart details
         const cartDetail = calculateCartDetails(cartData.items);
+        notifyCartUpdated();
 
         return {
             cart: cartData.items || [],
@@ -181,6 +187,7 @@ export const updateCartItem = async (productID, quantities) => {
             if (existingItemIndex >= 0 && quantities.units) {
                 localCart[existingItemIndex].units = quantities.units;
                 saveLocalCart(localCart);
+                notifyCartUpdated();
             }
             
             return {
@@ -195,6 +202,7 @@ export const updateCartItem = async (productID, quantities) => {
 
         // Calculate cart details
         const cartDetail = calculateCartDetails(cartData.items);
+        notifyCartUpdated();
 
         return {
             cart: cartData.items || [],
@@ -216,6 +224,7 @@ export const removeCartItem = async (productID) => {
             const localCart = getLocalCart();
             const updatedCart = localCart.filter(i => i.productID !== productID);
             saveLocalCart(updatedCart);
+            notifyCartUpdated();
             
             return {
                 cart: updatedCart,
@@ -229,6 +238,7 @@ export const removeCartItem = async (productID) => {
 
         // Calculate cart details
         const cartDetail = calculateCartDetails(cartData.items);
+        notifyCartUpdated();
 
         return {
             cart: cartData.items || [],
@@ -248,6 +258,7 @@ export const clearCart = async () => {
         
         if (!uid) {
             clearLocalCart();
+            notifyCartUpdated();
             return {
                 cart: [],
                 cartDetail: calculateCartDetails([]),
@@ -256,6 +267,7 @@ export const clearCart = async () => {
         }
 
         await axiosInstance.delete(`/cart/${uid}/clear`);
+        notifyCartUpdated();
 
         return {
             cart: [],

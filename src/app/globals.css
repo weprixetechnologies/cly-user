@@ -356,3 +356,21 @@
   border-top: 1px solid #e5e7eb;
   margin: 2rem 0;
 }
+
+@keyframes gradient-border {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.animated-border-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #FFC107, #ff6b6b, #FFC107);
+    background-size: 200% auto;
+    animation: gradient-border 2s linear infinite;
+    border-radius: 2px;
+}

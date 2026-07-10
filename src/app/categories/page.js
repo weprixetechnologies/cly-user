@@ -10,7 +10,6 @@ export default function CategoriesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [hoveredCategory, setHoveredCategory] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -19,8 +18,8 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/categories');
-            setCategories(response.data.categories || []);
+            const responseOriginal = await api.get('/categories').catch(() => api.get('/products/categories/list'));
+            setCategories(responseOriginal?.data?.categories || responseOriginal?.data?.data || []);
         } catch (error) {
             console.error('Error fetching categories:', error);
             setError('Failed to load categories');
@@ -35,10 +34,10 @@ export default function CategoriesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-gray-600 text-lg">Loading categories...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#004aad] border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-gray-600 font-medium">Loading categories...</p>
                 </div>
             </div>
         );
@@ -46,14 +45,14 @@ export default function CategoriesPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
-                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
-                    <p className="text-gray-600 mb-4">{error}</p>
+                    <div className="text-red-500 text-5xl mb-4">⚠️</div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h2>
+                    <p className="text-gray-500 font-medium mb-6">{error}</p>
                     <button
                         onClick={fetchCategories}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                        className="bg-[#004aad] hover:bg-[#003882] text-white px-8 py-2.5 rounded-lg font-semibold transition-colors shadow-sm"
                     >
                         Try Again
                     </button>
@@ -63,64 +62,148 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-            {/* Hero Section */}
-            <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white py-20">
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <div className="animate-fade-in-up">
-                        <h1 className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: 'var(--font-ledger)' }}>
-                            Explore Categories
-                        </h1>
-                        <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-                            Discover our wide range of products organized by categories. Find exactly what you're looking for.
-                        </p>
+        <div className="min-h-screen bg-white pb-20">
+            {/* Desktop Hero Section */}
+            <div className="hidden md:block relative bg-gradient-to-r from-orange-50 via-rose-50 to-orange-100 pt-16 pb-24 overflow-hidden border-b border-orange-100/50">
+                {/* Decorative blob */}
+                <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-orange-200/40 to-rose-200/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+                
+                <div className="relative max-w-[95%] xl:max-w-[1400px] mx-auto px-4 md:px-8">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+                        <div className="flex-1 animate-fade-in-up">
+                            <h1 className="text-4xl md:text-5xl lg:text-[52px] font-bold text-gray-900 mb-4 tracking-tight leading-tight">
+                                Shop by Categories
+                            </h1>
+                            <p className="text-lg md:text-xl text-gray-600 max-w-xl font-medium">
+                                Explore our wide range of premium stationery & essentials
+                            </p>
+                        </div>
+                        
+                        <div className="w-full md:w-auto bg-white/90 backdrop-blur-md border border-white/60 p-5 rounded-2xl shadow-xl shadow-orange-900/5 flex flex-wrap md:flex-nowrap gap-4 md:gap-8 justify-center items-center relative z-10">
+                            {/* Feature 1 */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-gray-900">100% Authentic</div>
+                                    <div className="text-[11px] text-gray-500 font-medium">Imported Products</div>
+                                </div>
+                            </div>
+                            
+                            <div className="hidden md:block w-px h-10 bg-gray-200"></div>
+                            
+                            {/* Feature 2 */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-gray-900">Best Wholesale Prices</div>
+                                    <div className="text-[11px] text-gray-500 font-medium">For Bulk Orders</div>
+                                </div>
+                            </div>
+                            
+                            <div className="hidden md:block w-px h-10 bg-gray-200"></div>
+
+                            {/* Feature 3 */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#004aad] shrink-0">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-gray-900">Pan India Delivery</div>
+                                    <div className="text-[11px] text-gray-500 font-medium">Fast & Reliable</div>
+                                </div>
+                            </div>
+
+                            <div className="hidden md:block w-px h-10 bg-gray-200"></div>
+
+                            {/* Feature 4 */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-gray-900">Dedicated Support</div>
+                                    <div className="text-[11px] text-gray-500 font-medium">Need help? Contact us</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Search Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-                <div className="bg-white rounded-2xl shadow-xl p-6 mb-12 animate-fade-in-up-delay">
-                    <div className="relative max-w-2xl mx-auto">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search categories..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg transition-all duration-300"
-                        />
+            {/* Mobile Hero Section */}
+            <div className="md:hidden bg-white border-b border-gray-100 px-5 py-6">
+                <div className="flex items-center justify-between">
+                    <div className="pr-4 max-w-[70%]">
+                        <h1 className="text-2xl font-bold text-[#0B1536] mb-1.5">Categories</h1>
+                        <p className="text-[13px] text-gray-500 leading-relaxed font-medium">Explore our wide range of premium stationery & essentials.</p>
+                    </div>
+                    <div className="w-[72px] h-[72px] shrink-0 bg-orange-50/60 rounded-[18px] flex items-center justify-center relative shadow-sm border border-orange-100/40">
+                        <span className="text-[32px] drop-shadow-sm relative z-10">📦</span>
+                        <span className="absolute top-2 left-2 text-[#F97316] text-[10px] opacity-80 animate-pulse">✨</span>
+                        <span className="absolute bottom-2.5 right-1.5 text-[#F97316] text-[8px] opacity-80 animate-pulse" style={{animationDelay: '150ms'}}>✨</span>
+                        <span className="absolute top-2.5 right-1.5 text-[#F97316] text-[7px] opacity-80 animate-pulse" style={{animationDelay: '300ms'}}>✨</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Search and Sort */}
+            <div className="max-w-[95%] xl:max-w-[1400px] mx-auto px-4 md:px-8 py-8 flex flex-col md:flex-row items-center gap-4">
+                <div className="relative flex-1 w-full bg-gray-50/80 border border-gray-100 rounded-xl transition-shadow focus-within:shadow-sm focus-within:bg-white">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <input type="text" placeholder="Search categories..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3.5 bg-transparent focus:outline-none rounded-xl text-gray-700 font-medium placeholder:text-gray-400" />
+                </div>
+                
+                <div className="w-full md:w-auto relative group">
+                    <select className="w-full md:w-[220px] bg-gray-50/80 hover:bg-white border border-gray-100 rounded-xl py-3.5 pl-4 pr-10 font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 cursor-pointer appearance-none transition-all shadow-sm">
+                        <option value="popular">Sort by: Popular</option>
+                        <option value="az">Sort by: A-Z</option>
+                        <option value="za">Sort by: Z-A</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </div>
                 </div>
             </div>
 
             {/* Categories Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            <div className="max-w-[95%] xl:max-w-[1400px] mx-auto px-4 md:px-8">
                 {filteredCategories.length === 0 ? (
-                    <div className="text-center py-20">
+                    <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                         <div className="text-gray-400 text-6xl mb-4">🔍</div>
                         <h3 className="text-2xl font-bold text-gray-800 mb-2">No categories found</h3>
-                        <p className="text-gray-600">Try adjusting your search terms</p>
+                        <p className="text-gray-600 font-medium">Try adjusting your search terms</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                        {filteredCategories.map((category, index) => (
-                            <div
-                                key={category.categoryID || index}
-                                className="group animate-fade-in-up"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                                onMouseEnter={() => setHoveredCategory(category.categoryID)}
-                                onMouseLeave={() => setHoveredCategory(null)}
-                            >
-                                <Link href={`/categories/${category.categoryID}`}>
-                                    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
-                                        {/* Image Container */}
-                                        <div className="relative h-64 overflow-hidden">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
+                        {filteredCategories.map((category, index) => {
+                            // Cycle through some background colors for the blobs
+                            const blobColors = [
+                                'bg-blue-50/80',
+                                'bg-teal-50/80',
+                                'bg-pink-50/80',
+                                'bg-orange-50/80',
+                                'bg-purple-50/80'
+                            ];
+                            const blobColor = blobColors[index % blobColors.length];
+                            
+                            return (
+                                <Link key={category.categoryID || index} href={`/categories/${category.categoryID}`}>
+                                    <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 p-3 md:p-6 flex flex-col items-center relative group h-full">
+                                        
+                                        {/* Product Count Pill */}
+                                        <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-gray-50 border border-gray-100 text-gray-500 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[9px] md:text-[10px] font-bold shadow-sm z-10 transition-colors group-hover:bg-white group-hover:text-gray-700">
+                                            {category.productCount || 0} Products
+                                        </div>
+
+                                        {/* Image Area with Blob Background */}
+                                        <div className="relative w-20 h-20 md:w-40 md:h-40 mb-3 md:mb-6 mt-6 md:mt-4 flex items-center justify-center shrink-0">
+                                            <div className={`absolute inset-0 ${blobColor} rounded-[40%_60%_70%_30%/40%_50%_60%_50%] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 ease-in-out`}></div>
                                             {(() => {
                                                 const normalize = (v) => typeof v === 'string' ? v.trim() : '';
                                                 const candidates = [normalize(category?.image), normalize(category?.imgUrl)];
@@ -135,72 +218,29 @@ export default function CategoriesPage() {
                                                         src={imageSrc}
                                                         alt={category.categoryName || 'Category'}
                                                         fill
-                                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        className="object-contain p-4 relative z-10 group-hover:scale-110 transition-transform duration-500 ease-in-out drop-shadow-md"
                                                     />
                                                 );
                                             })()}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                                            {/* Product Count Badge */}
-                                            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                                {category.productCount || 0} products
-                                            </div>
-
-                                            {/* Hover Overlay */}
-                                            <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                <div className="text-white text-center">
-                                                    <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                    </svg>
-                                                    <p className="font-semibold">Explore</p>
-                                                </div>
-                                            </div>
                                         </div>
 
                                         {/* Content */}
-                                        <div className="p-6">
-                                            <h3
-                                                className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-300"
-                                                style={{ fontFamily: 'var(--font-montserrat)' }}
-                                            >
-                                                {category.categoryName || 'Unnamed Category'}
-                                            </h3>
-                                            <p className="text-gray-600 text-sm">
-                                                Discover amazing products in this category
+                                        <div className="text-center w-full mt-auto">
+                                            <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1.5 md:mb-2 group-hover:text-[#004aad] transition-colors leading-tight line-clamp-1">{category.categoryName || 'Category'}</h3>
+                                            <p className="hidden md:block text-[13px] text-gray-500 leading-relaxed font-medium mb-5 line-clamp-2">
+                                                Explore our premium collection of {category.categoryName?.toLowerCase() || 'products'} and find exactly what you need.
                                             </p>
+                                            
+                                            <div className="hidden md:flex text-[13px] font-bold text-[#6E2594] items-center justify-center gap-1.5 group-hover:gap-2 transition-all">
+                                                View Products <span aria-hidden="true">&rarr;</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </Link>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
-            </div>
-
-            {/* Call to Action */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
-                <div className="max-w-[90%] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: 'var(--font-ledger)' }}>
-                        Can't find what you're looking for?
-                    </h2>
-                    <p className="text-xl text-blue-100 mb-8">
-                        Browse all our products or contact us for assistance
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link
-                            href="/products"
-                            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                        >
-                            View All Products
-                        </Link>
-                        <Link
-                            href="/contact"
-                            className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors"
-                        >
-                            Contact Us
-                        </Link>
-                    </div>
-                </div>
             </div>
         </div>
     );

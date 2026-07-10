@@ -5,6 +5,7 @@ import Image from 'next/image';
 import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import api from '@/utils/axiosInstance';
+import ProductCard from '@/components/products/productCard';
 
 export default function CategoryProducts({ params }) {
     return (
@@ -262,58 +263,22 @@ function CategoryProductsContent({ params }) {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                             {filteredProducts.map((product, index) => (
-                                <div
-                                    key={product.productID}
-                                    className="group animate-fade-in-up"
-                                    style={{ animationDelay: `${index * 0.1}s` }}
-                                >
-                                    <Link href={`/products/${product.productID}`}>
-                                        <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
-                                            {/* Image Container */}
-                                            <div className="relative h-64 overflow-hidden">
-                                                <Image
-                                                    src={product.featuredImages || 'https://picsum.photos/400/300'}
-                                                    alt={product.productName}
-                                                    fill
-                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                                                {/* Price Badge */}
-                                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                                    ₹{Number(product.productPrice).toFixed(2)}
-                                                </div>
-
-                                                {/* Hover Overlay */}
-                                                <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                    <div className="text-white text-center">
-                                                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                        </svg>
-                                                        <p className="font-semibold">View Details</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Content (minimal) */}
-                                            <div className="p-6">
-                                                <div className="mb-2">
-                                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                                        {product.categoryName || 'Category'}
-                                                    </span>
-                                                </div>
-                                                <h3
-                                                    className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 line-clamp-1"
-                                                    style={{ fontFamily: 'var(--font-montserrat)' }}
-                                                >
-                                                    {product.productName}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </div>
+                                <ProductCard 
+                                    key={product.productID || index} 
+                                    product={{
+                                        id: product.productID,
+                                        name: product.productName,
+                                        image: product.featuredImages || 'https://picsum.photos/270/280',
+                                        category: product.categoryName || 'Category',
+                                        categoryID: product.categoryID,
+                                        minQty: product.minQty || 1,
+                                        price: product.productPrice || 0,
+                                        sku: product.sku,
+                                        inventory: product.inventory || 0,
+                                    }} 
+                                />
                             ))}
                         </div>
 

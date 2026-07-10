@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           <DisableContextMenu />
           <Preloader />
-          <Header></Header>
+          <Header />
           <main className="">
             {children}
           </main>

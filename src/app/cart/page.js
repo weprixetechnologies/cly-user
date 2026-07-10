@@ -143,12 +143,19 @@ const Page = () => {
                 throw new Error('User not authenticated');
             }
 
+            const affiliateLinkId = getCookie('_affiliate_link_id');
+            const affiliateId = getCookie('_affiliate_id');
+            
+            console.log('[Checkout] Affiliate cookies at checkout:', { affiliateLinkId, affiliateId });
+
             const response = await axiosInstance.post(`/order/user/${uid}/place-order`, {
                 address: selectedAddress,
                 paymentMode,
                 couponCode: appliedCoupon?.couponCode || null,
                 customerComment: customerComment.trim() || null,
                 themeCategory: themeCategory.trim() || null,
+                affiliate_link_id: affiliateLinkId || null,
+                affiliate_id: affiliateId || null,
             });
 
             // Handle successful order placement
@@ -340,7 +347,7 @@ const Page = () => {
                     }
 
                 </div>
-                <div className="md:col-span-1 py-3 flex flex-col md:px-3 gap-2 mb-15">
+                <div className="md:col-span-1 py-3 flex flex-col md:px-3 gap-2 mb-15 md:sticky md:top-32 h-fit">
                     {/* {
             !confirmAddress && <SelectAddress onSelect={handleAddressSelect} />
           } */}

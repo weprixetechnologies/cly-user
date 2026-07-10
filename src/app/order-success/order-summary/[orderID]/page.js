@@ -9,6 +9,7 @@ export default function OrderSummary({ params }) {
     const [data, setData] = useState({ items: [], info: null, payments: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         async function load() {
@@ -22,9 +23,6 @@ export default function OrderSummary({ params }) {
                 if (!orderRes?.data?.success) throw new Error(orderRes?.data?.message || 'Failed to fetch order');
                 const rows = orderRes?.data?.data || [];
                 const payments = paymentRes?.data?.data || [];
-                console.log('Order data:', rows);
-                console.log('Payment data:', payments);
-                console.log('Payment response:', paymentRes?.data);
                 setData({ items: rows, info: rows[0] || null, payments });
             } catch (e) {
                 setError(e?.response?.data?.message || e?.message || 'Failed to fetch order');
@@ -33,430 +31,581 @@ export default function OrderSummary({ params }) {
         load();
     }, [orderID]);
 
+    const copyOrderID = () => {
+        navigator.clipboard.writeText(orderID);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     if (loading) {
         return (
-            <div className="min-h-screen grid place-items-center">
-                <div className="text-gray-600">Loading order…</div>
+            <div className="min-h-screen bg-[#f8fafc] grid place-items-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-[#EF6A22] mx-auto mb-3"></div>
+                    <p className="text-slate-500 text-sm font-medium">Loading order details...</p>
+                </div>
             </div>
         );
     }
 
     if (error || !data.info) {
         return (
-            <div className="min-h-screen grid place-items-center p-6 text-center">
-                <div>
-                    <div className="text-2xl font-semibold mb-2">Order not available</div>
-                    <div className="text-gray-600 mb-4">{error || 'Unable to load this order.'}</div>
-                    <Link href="/account" className="px-4 py-2 bg-black text-white rounded-md">My Orders</Link>
+            <div className="min-h-screen bg-[#f8fafc] grid place-items-center p-6 text-center">
+                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm max-w-md w-full">
+                    <div className="text-5xl mb-4">📦</div>
+                    <div className="text-xl font-bold text-slate-800 mb-2">Order Not Found</div>
+                    <div className="text-slate-500 mb-6 text-sm">{error || 'Unable to load this order.'}</div>
+                    <Link href="/account" className="inline-flex items-center justify-center w-full px-5 py-2.5 bg-[#EF6A22] text-white rounded-lg text-sm font-semibold hover:bg-[#d85d1c] transition">
+                        ← Back to My Orders
+                    </Link>
                 </div>
             </div>
         );
     }
 
     const info = data.info;
+    const status = (info.orderStatus || 'pending').toLowerCase();
 
-    // Calculate subtotal based on accepted quantities (for partial acceptance)
+    // Calculate subtotal
     const subtotal = data.items.reduce((s, it) => {
         const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
-        const acceptedQuantity = (it.accepted_units || 0);
-        const requestedQuantity = (it.requested_units || it.units || 0);
-        // Use accepted quantity if available, otherwise use requested quantity
-        const quantity = acceptedQuantity > 0 ? acceptedQuantity : requestedQuantity;
-        return s + (unitPrice * quantity);
+        const acceptedQty = (it.accepted_units || 0);
+        const requestedQty = (it.requested_units || it.units || 0);
+        const qty = acceptedQty > 0 ? acceptedQty : requestedQty;
+        return s + (unitPrice * qty);
     }, 0);
 
-    // Get shipping charge from order info (same for all items in an order)
     const shippingCharge = Number(info.shipping_charge || 0);
     const total = subtotal + shippingCharge;
+    const totalPaid = data.payments.reduce((sum, p) => sum + Number(p.paid_amount || 0), 0);
+    const remaining = total - totalPaid;
 
-    // Calculate payment totals
-    const totalPaid = data.payments.reduce((sum, payment) => sum + Number(payment.paid_amount || 0), 0);
-    const remainingAmount = total - totalPaid;
+    // Order progress steps based on actual status
+    const getProgressSteps = () => {
+        const placedDate = info.createdAt ? new Date(info.createdAt) : null;
+        const updatedDate = info.updatedAt ? new Date(info.updatedAt) : null;
 
-    console.log('Payment calculations:', {
-        payments: data.payments,
-        totalPaid,
-        remainingAmount,
-        total
-    });
+        const formatDate = (d) => d ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        const formatTime = (d) => d ? d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        const steps = [
+            {
+                label: 'Order Received',
+                description: placedDate ? `${formatDate(placedDate)}, ${formatTime(placedDate)}` : '',
+                status: 'completed',
+                icon: (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                )
+            },
+            {
+                label: 'Under Review',
+                description: status === 'pending' ? 'Reviewing availability' : 'Review completed',
+                status: status === 'pending' ? 'active' : 'completed',
+                icon: status === 'pending' ? (
+                    <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+                ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                )
+            }
+        ];
+
+        if (status === 'rejected') {
+            steps.push({
+                label: 'Order Rejected',
+                description: updatedDate ? `Rejected on ${formatDate(updatedDate)}` : 'Cancelled',
+                status: 'rejected',
+                icon: (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                )
+            });
+        } else {
+            steps.push({
+                label: 'Order Accepted',
+                description: status === 'accepted' ? (updatedDate ? `Accepted on ${formatDate(updatedDate)}` : 'Confirmed') : 'Awaiting review',
+                status: status === 'accepted' ? 'completed' : 'upcoming',
+                icon: status === 'accepted' ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                ) : (
+                    <div className="w-2.5 h-2.5 bg-slate-300 rounded-full"></div>
+                )
+            });
+
+            // Payment step
+            const isFullyPaid = totalPaid >= total;
+            const paymentLabel = isFullyPaid ? 'Payment Received' : totalPaid > 0 ? 'Partially Paid' : 'Pending Payment';
+            const paymentDesc = isFullyPaid
+                ? `Received ₹${totalPaid.toFixed(2)}`
+                : totalPaid > 0
+                    ? `Paid ₹${totalPaid.toFixed(2)} of ₹${total.toFixed(2)}`
+                    : 'Awaiting payment';
+
+            steps.push({
+                label: paymentLabel,
+                description: paymentDesc,
+                status: isFullyPaid ? 'completed' : totalPaid > 0 ? 'active' : 'upcoming',
+                icon: isFullyPaid ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                ) : totalPaid > 0 ? (
+                    <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+                ) : (
+                    <div className="w-2.5 h-2.5 bg-slate-300 rounded-full"></div>
+                )
+            });
+        }
+
+        return steps;
+    };
+
+    const steps = getProgressSteps();
+
+    // Color mapper for order status badge
+    const statusBadges = {
+        pending: 'bg-amber-50 text-amber-700 border border-amber-200',
+        accepted: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        rejected: 'bg-red-50 text-red-700 border border-red-200',
+    };
+    const statusLabels = {
+        pending: 'Pending Review',
+        accepted: 'Order Accepted',
+        rejected: 'Order Rejected',
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            <div className="max-w-7xl mx-auto p-4 md:p-8">
-                {/* Header Section */}
-                <div className="mb-8">
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-xl border border-white/20">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="space-y-2">
-                                <div className="text-sm font-medium text-slate-600 uppercase tracking-wide">Order Confirmation</div>
-                                <div className="text-3xl font-bold text-slate-900">{orderID}</div>
-                                <div className="text-sm text-slate-500">
-                                    Placed on {info.createdAt ? new Date(info.createdAt).toLocaleDateString('en-US', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    }) : 'Unknown date'}
+        <div className="min-h-screen bg-[#F8F9FA] text-slate-800">
+            <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+
+                {/* ── 1. Header Card (Banner Layout matching design) ── */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 mb-6 shadow-sm">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        
+                        {/* Left Side: Circular Success/Status Indicator and Message */}
+                        <div className="flex items-start md:items-center gap-5">
+                            {/* Conic Ring Wrapper around dot */}
+                            <div className="relative flex-shrink-0">
+                                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center relative">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-sm">
+                                        {status === 'rejected' ? (
+                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    {/* Small outer decorative sparkles/dots */}
+                                    <span className="absolute top-1 left-1 w-1.5 h-1.5 bg-emerald-300 rounded-full"></span>
+                                    <span className="absolute bottom-1 right-2 w-2 h-2 bg-emerald-200 rounded-full"></span>
+                                    <span className="absolute top-4 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className={`px-4 py-2 rounded-full text-sm font-semibold ${info.orderStatus === 'accepted'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                    : info.orderStatus === 'rejected'
-                                        ? 'bg-red-100 text-red-800 border border-red-200'
-                                        : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                    }`}>
-                                    {info.orderStatus || 'pending'}
+                            
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <h1 className="text-xl md:text-2xl font-bold text-slate-900">
+                                        Order {status === 'accepted' ? 'Confirmed!' : status === 'rejected' ? 'Rejected' : 'Received!'}
+                                    </h1>
                                 </div>
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <p className="text-sm text-slate-500">
+                                    {status === 'pending' && `Thank you, ${info.userName || 'Customer'}! We've received your order and will notify you when it ships.`}
+                                    {status === 'accepted' && `Thank you, ${info.userName || 'Customer'}! Your order has been confirmed and is being processed.`}
+                                    {status === 'rejected' && `Sorry, your order could not be accepted. Please contact support for more details.`}
+                                </p>
+                                <div className="pt-2">
+                                    <Link href="/products" className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                                        Continue Shopping
+                                    </Link>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Right Side: Order Number metadata and quick info (mockup match) */}
+                        <div className="lg:border-l border-slate-200 lg:pl-8 py-2 min-w-full lg:min-w-[400px]">
+                            
+                            {/* Order Number Box */}
+                            <div className="space-y-1 mb-5">
+                                <div className="text-xs font-semibold text-slate-400">Order Number</div>
+                                <div className="flex items-center gap-2.5">
+                                    <span className="font-sans text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">{orderID}</span>
+                                    <button
+                                        onClick={copyOrderID}
+                                        className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition shadow-sm"
+                                        title="Copy Order ID"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </button>
+                                    {copied && <span className="text-[10px] text-green-600 font-semibold bg-white border border-green-150 px-2 py-0.5 rounded shadow-sm">Copied!</span>}
+                                </div>
+                            </div>
+
+                            {/* Sub-grid of Placed On, Estimated Delivery, and Order Status */}
+                            <div className="grid grid-cols-3 divide-x divide-slate-200 gap-2 items-center">
+                                
+                                {/* Placed On */}
+                                <div className="flex items-center gap-3 pr-2">
+                                    <div className="w-10 h-10 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Placed On</div>
+                                        <div className="text-xs font-bold text-slate-800">
+                                            {info.createdAt ? new Date(info.createdAt).toLocaleDateString('en-US', {
+                                                month: 'long', day: 'numeric', year: 'numeric'
+                                            }) : '—'}
+                                        </div>
+                                        <div className="text-[10px] text-slate-400 font-medium">
+                                            {info.createdAt ? new Date(info.createdAt).toLocaleTimeString('en-US', {
+                                                hour: '2-digit', minute: '2-digit', hour12: true
+                                            }) : ''}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Ordered By */}
+                                <div className="flex items-center gap-3 px-4">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50/70 border border-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9-9c1.657 0 3 4.03 3 9s-1.343 9-3 9m0-18c-1.657 0-3 4.03-3 9s1.343 9 3 9m-9-9a9 9 0 019-9" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ordered By</div>
+                                        <div className="text-xs font-bold text-slate-800">
+                                            WEBSITE
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Order Status */}
+                                <div className="pl-4">
+                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                        <span className={`w-2 h-2 rounded-full ${
+                                            status === 'accepted' ? 'bg-emerald-500' :
+                                            status === 'rejected' ? 'bg-red-500' :
+                                            'bg-amber-500'
+                                        }`}></span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Order Status</span>
+                                    </div>
+                                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${
+                                        status === 'accepted'
+                                            ? (remaining > 0 ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' : 'bg-[#D1FAE5] text-[#065F46] border border-[#10B981]')
+                                            : status === 'rejected'
+                                                ? 'bg-[#FEE2E2] text-[#991B1B] border border-[#FCA5A5]'
+                                                : 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
+                                    }`}>
+                                        {status === 'accepted'
+                                            ? (remaining > 0 ? 'Pending Payment' : 'Paid & Confirmed')
+                                            : status === 'rejected'
+                                                ? 'Order Rejected'
+                                                : 'Pending Review'}
+                                    </span>
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Products Section */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
+                {/* ── 2. Two-Column Main Content Section ── */}
+                <div className="grid lg:grid-cols-3 gap-6 items-start">
+                    
+                    {/* Left & Center: Combined Items & Progress Panel */}
+                    <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-150">
+                            
+                            {/* Left Column: Order Progress timeline sidebar */}
+                            <div className="p-6 md:col-span-1 bg-slate-50/50">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Order Progress</h3>
+                                
+                                <div className="relative flex flex-col gap-6 pl-2">
+                                    {/* Connecting Line */}
+                                    <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200"></div>
+                                    
+                                    {steps.map((step, idx) => {
+                                        const isLast = idx === steps.length - 1;
+                                        
+                                        const dotColors = {
+                                            completed: 'bg-emerald-500 ring-4 ring-emerald-50',
+                                            active: 'bg-[#EF6A22] ring-4 ring-orange-100',
+                                            rejected: 'bg-red-500 ring-4 ring-red-50',
+                                            upcoming: 'bg-slate-200',
+                                        };
+                                        const textColors = {
+                                            completed: 'text-slate-800 font-semibold',
+                                            active: 'text-[#EF6A22] font-semibold',
+                                            rejected: 'text-red-600 font-semibold',
+                                            upcoming: 'text-slate-400',
+                                        };
+                                        
+                                        return (
+                                            <div key={idx} className="flex gap-4 items-start relative z-10">
+                                                {/* Step Circle */}
+                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white ${dotColors[step.status] || dotColors.upcoming}`}>
+                                                    {step.status === 'completed' && (
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                    )}
+                                                    {step.status === 'rejected' && (
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    )}
+                                                    {step.status === 'active' && (
+                                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                                    )}
+                                                    {step.status === 'upcoming' && (
+                                                        <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                                                    )}
+                                                </div>
+                                                
+                                                {/* Text Info */}
+                                                <div className="space-y-0.5">
+                                                    <div className={`text-xs ${textColors[step.status]}`}>{step.label}</div>
+                                                    {step.description && (
+                                                        <div className="text-[10px] text-slate-400 font-medium leading-normal">{step.description}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                                Order Items
-                            </h2>
-                            <div className="space-y-4">
-                                {data.items.map((it, idx) => {
-                                    const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
-                                    const requestedQuantity = (it.requested_units || it.units || 0);
-                                    const acceptedQuantity = (it.accepted_units || 0);
-                                    const quantity = acceptedQuantity > 0 ? acceptedQuantity : requestedQuantity;
-                                    const totalPrice = unitPrice * quantity;
-                                    const isPartial = acceptedQuantity > 0 && acceptedQuantity < requestedQuantity;
-                                    const isRejected = acceptedQuantity === 0 && it.acceptance_status === 'rejected';
+                            </div>
+                            
+                            {/* Right Area: Items list and Footer Support */}
+                            <div className="md:col-span-3 flex flex-col justify-between min-h-[400px]">
+                                
+                                {/* Items Header and List */}
+                                <div>
+                                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                                        <h2 className="font-bold text-slate-800 text-sm">Order Items ({data.items.length})</h2>
+                                    </div>
+                                    
+                                    <div className="divide-y divide-slate-100">
+                                        {data.items.map((it, idx) => {
+                                            const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
+                                            const requestedQty = (it.requested_units || it.units || 0);
+                                            const acceptedQty = (it.accepted_units || 0);
+                                            const qty = acceptedQty > 0 ? acceptedQty : requestedQty;
+                                            const lineTotal = unitPrice * qty;
+                                            const isPartial = acceptedQty > 0 && acceptedQty < requestedQty;
+                                            const isRejected = acceptedQty === 0 && it.acceptance_status === 'rejected';
 
-                                    return (
-                                        <div key={idx} className="group bg-gradient-to-r from-white to-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg">
-                                            <div className="flex items-start gap-4">
-                                                <div className="relative">
+                                            return (
+                                                <div key={idx} className="p-6 flex items-start gap-4 hover:bg-slate-50/30 transition">
                                                     <img
                                                         src={it.featuredImage || ''}
                                                         alt={it.productName}
-                                                        className="w-24 h-24 object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300"
+                                                        className="w-20 h-20 object-cover rounded-xl border border-slate-200/80 flex-shrink-0 bg-slate-50"
                                                     />
-                                                    {isPartial && (
-                                                        <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                                            Partial
-                                                        </div>
-                                                    )}
-                                                    {isRejected && (
-                                                        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                                            Rejected
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">
-                                                        {it.productName}
-                                                    </h3>
-                                                    <div className="text-sm text-slate-500 mb-2">SKU: {it.sku || '—'}</div>
-
-                                                    <div className="flex items-center gap-4 mb-3">
-                                                        {isPartial ? (
-                                                            <div className="flex items-center gap-2 text-sm">
-                                                                <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full font-medium">
-                                                                    Requested: {requestedQuantity}
-                                                                </span>
-                                                                <span className="text-slate-400">→</span>
-                                                                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                                                                    Accepted: {acceptedQuantity}
-                                                                </span>
-                                                            </div>
-                                                        ) : isRejected ? (
-                                                            <div className="flex items-center gap-2 text-sm">
-                                                                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
-                                                                    Requested: {requestedQuantity}
-                                                                </span>
-                                                                <span className="text-slate-400">→</span>
-                                                                <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full font-medium">
-                                                                    Rejected
-                                                                </span>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-sm">
-                                                                Qty: {quantity}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-bold text-slate-900 text-sm leading-snug mb-1">{it.productName}</h3>
+                                                        <div className="text-xs text-slate-400 mb-2">SKU: {it.sku || '—'}</div>
+                                                        
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            {/* Show requested units always */}
+                                                            <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-semibold">
+                                                                Requested: {requestedQty}
                                                             </span>
-                                                        )}
-                                                    </div>
+                                                            
+                                                            {/* Show accepted units if order is accepted or partial */}
+                                                            {status === 'accepted' && (
+                                                                <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
+                                                                    Accepted: {acceptedQty}
+                                                                </span>
+                                                            )}
 
-                                                    {it.admin_notes && (
-                                                        <div className="bg-slate-50 border-l-4 border-blue-500 p-3 rounded-r-lg">
-                                                            <div className="text-xs text-slate-600 font-medium mb-1">Admin Note:</div>
-                                                            <div className="text-sm text-slate-700 italic">{it.admin_notes}</div>
+                                                            {isRejected && (
+                                                                <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-bold">
+                                                                    Item rejected
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-sm text-slate-500 mb-1">
-                                                        ₹{unitPrice.toFixed(2)} × {quantity}
-                                                    </div>
-                                                    <div className="text-2xl font-bold text-slate-900">
-                                                        ₹{totalPrice.toFixed(2)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                        {/* Payment Transactions */}
-                        {data.payments && data.payments.length > 0 && (
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    Payment History
-                                </h3>
-                                <div className="space-y-3">
-                                    {data.payments.map((payment, index) => (
-                                        <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-semibold text-slate-900">₹{Number(payment.paid_amount).toFixed(2)}</div>
-                                                        <div className="text-sm text-slate-600">
-                                                            {new Date(payment.createdAt).toLocaleDateString('en-IN', {
-                                                                year: 'numeric',
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
-                                                        </div>
-                                                        {payment.notes && (
-                                                            <div className="text-xs text-slate-500 mt-1">{payment.notes}</div>
+                                                        {it.admin_notes && (
+                                                            <div className="mt-2 text-xs text-indigo-600 bg-indigo-50/50 px-3 py-1.5 rounded-lg border-l-2 border-indigo-400">
+                                                                {it.admin_notes}
+                                                            </div>
                                                         )}
                                                     </div>
+                                                    <div className="text-right flex-shrink-0">
+                                                        <div className="text-xs text-slate-400">₹{unitPrice.toFixed(2)} × {qty}</div>
+                                                        <div className="text-base font-extrabold text-slate-900">₹{lineTotal.toFixed(2)}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="text-xs text-slate-500">
-                                                Admin: {payment.admin_uid || 'System'}
-                                            </div>
-                                        </div>
-                                    ))}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
-                        )}
-
+                        </div>
                     </div>
 
-                    {/* Sidebar */}
+                    {/* Right: Sidebar segment (Summary, Payment, Address) */}
                     <div className="space-y-6">
-                        {/* Order Summary */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                        
+                        {/* Order Summary Card */}
+                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="px-6 py-4 border-b border-slate-150 flex items-center gap-2">
+                                <span className="text-base">📋</span>
+                                <h2 className="font-bold text-slate-800 text-sm">Order Summary</h2>
+                            </div>
+                            <div className="p-6 space-y-3.5 text-xs font-semibold text-slate-600">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Subtotal</span>
+                                    <span className="text-slate-800">₹{subtotal.toFixed(2)}</span>
                                 </div>
-                                Order Summary
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center py-2">
-                                    <span className="text-slate-600">Subtotal</span>
-                                    <span className="font-semibold text-slate-900">₹{subtotal.toFixed(2)}</span>
-                                </div>
-                                {shippingCharge > 0 && (
-                                    <div className="flex justify-between items-center py-2">
-                                        <span className="text-slate-600">Shipping Charges</span>
-                                        <span className="font-semibold text-slate-900">₹{shippingCharge.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between items-center py-2">
-                                    <span className="text-slate-600">Amount Paid</span>
-                                    <span className="font-semibold text-green-600">
-                                        ₹{totalPaid.toFixed(2)}
-                                        {data.payments.length === 0 && (
-                                            <span className="text-xs text-slate-400 ml-2">(No payments recorded)</span>
-                                        )}
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Shipping</span>
+                                    <span className={shippingCharge > 0 ? 'text-slate-800' : 'text-green-600 font-bold'}>
+                                        {shippingCharge > 0 ? `₹${shippingCharge.toFixed(2)}` : 'FREE'}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center py-2">
-                                    <span className="text-slate-600">Remaining</span>
-                                    <span className={`font-semibold ${remainingAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>
-                                        ₹{remainingAmount.toFixed(2)}
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Discount</span>
+                                    <span className="text-slate-800">− ₹0.00</span>
+                                </div>
+                                <div className="border-t border-slate-100 my-2"></div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Amount Paid</span>
+                                    <span className="text-green-600 font-bold">₹{totalPaid.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-400">Amount Remaining</span>
+                                    <span className={remaining > 0 ? 'text-orange-600 font-bold animate-pulse' : 'text-green-600 font-bold'}>
+                                        ₹{remaining.toFixed(2)}
                                     </span>
                                 </div>
-                                <div className="border-t border-slate-200 pt-3">
+                                <div className="border-t border-dashed border-slate-200 pt-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-lg font-bold text-slate-900">Total Amount</span>
-                                        <span className="text-2xl font-bold text-blue-600">₹{total.toFixed(2)}</span>
+                                        <span className="text-sm font-extrabold text-slate-900">Total Amount</span>
+                                        <span className="text-xl font-black text-indigo-600">₹{total.toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Payment Info */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                    </svg>
-                                </div>
+                        {/* Payment Method Card */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                            <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+                                <span className="text-base">💳</span>
                                 Payment Method
                             </h3>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-slate-600 font-bold text-sm">
-                                        {info.paymentMode === 'COD' ? 'COD' : 'ONL'}
-                                    </span>
+                                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
+                                    {info.paymentMode === 'COD' ? 'COD' : 'ONL'}
                                 </div>
                                 <div>
-                                    <div className="font-semibold text-slate-900">
-                                        {info.paymentMode === 'COD' ? 'Advance Payment' : 'Online Payment'}
+                                    <div className="font-bold text-slate-800 text-sm">
+                                        {info.paymentMode === 'COD' ? 'Cash on Delivery' : 'Online Payment'}
                                     </div>
-                                    <div className="text-sm text-slate-500">
-                                        {info.paymentMode === 'COD' ? 'Pay when delivered' : 'Paid online'}
+                                    <div className="text-xs text-slate-400 font-medium">
+                                        {info.paymentMode === 'COD' ? 'Pay when package arrives' : 'Paid online'}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Delivery Address */}
+                        {/* Delivery Address Card */}
                         {info.addressName && (
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
+                            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">
+                                    <span className="text-base">📍</span>
                                     Delivery Address
                                 </h3>
-                                <div className="space-y-2">
-                                    <div className="font-semibold text-slate-900">{info.addressName}</div>
-                                    <div className="text-slate-600">{info.addressPhone}</div>
-                                    <div className="text-slate-600">
+                                <div className="text-xs space-y-1.5 font-semibold text-slate-600">
+                                    <div className="font-extrabold text-slate-900 text-sm">{info.addressName}</div>
+                                    {info.addressPhone && (
+                                        <div className="text-slate-400 flex items-center gap-1">
+                                            <span>📞</span>
+                                            {info.addressPhone}
+                                        </div>
+                                    )}
+                                    <div className="text-slate-500 leading-relaxed">
                                         {info.addressLine1}{info.addressLine2 ? `, ${info.addressLine2}` : ''}
                                     </div>
-                                    <div className="text-slate-600">
+                                    <div className="text-slate-500">
                                         {info.addressCity}, {info.addressState} - {info.addressPincode}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Debug Payment Data */}
-                        {/* <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                            <h4 className="font-semibold text-yellow-800 mb-2">Debug: Payment Data</h4>
-                            <div className="text-xs text-yellow-700">
-                                <div>Payments array length: {data.payments.length}</div>
-                                <div>Total paid: ₹{totalPaid.toFixed(2)}</div>
-                                <div>Raw payments data: {JSON.stringify(data.payments, null, 2)}</div>
-                            </div>
-                        </div> */}
-
-
-                        {/* Customer Comment */}
-                        {info.customer_comment && (
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                        </svg>
-                                    </div>
-                                    Your Comment
-                                </h3>
-                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                                    <div className="text-sm text-amber-900 whitespace-pre-wrap">{info.customer_comment}</div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Order Remarks */}
+                        {/* Admin Remarks Card (only show if present) */}
                         {(info.remarks || (info.remarks_photos && info.remarks_photos.length > 0)) && (
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                        </svg>
-                                    </div>
+                            <div className="bg-blue-50/50 rounded-2xl border border-blue-200 p-6 shadow-sm">
+                                <h3 className="font-bold text-blue-900 text-sm mb-3 flex items-center gap-2">
+                                    <span>📝</span>
                                     Admin Remarks
                                 </h3>
-                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    {info.remarks && (
-                                        <div className="text-sm text-blue-800 whitespace-pre-wrap mb-3">{info.remarks}</div>
-                                    )}
-                                    {info.remarks_photos && (() => {
-                                        let photos = [];
-                                        if (Array.isArray(info.remarks_photos)) {
-                                            photos = info.remarks_photos;
-                                        } else if (typeof info.remarks_photos === 'string') {
-                                            try {
-                                                photos = JSON.parse(info.remarks_photos);
-                                            } catch {
-                                                photos = [];
-                                            }
-                                        }
-                                        return photos.length > 0 ? (
+                                {info.remarks && (
+                                    <div className="text-xs text-blue-800 leading-relaxed font-semibold mb-3 whitespace-pre-wrap">{info.remarks}</div>
+                                )}
+                                {info.remarks_photos && (() => {
+                                    let photos = [];
+                                    if (Array.isArray(info.remarks_photos)) {
+                                        photos = info.remarks_photos;
+                                    } else if (typeof info.remarks_photos === 'string') {
+                                        try { photos = JSON.parse(info.remarks_photos); } catch { photos = []; }
+                                    }
+                                    return photos.length > 0 ? (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {photos.map((photo, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={photo}
+                                                    alt={`Remarks photo ${index + 1}`}
+                                                    className="w-full h-16 object-cover rounded-lg border border-blue-200/60 cursor-pointer hover:opacity-85 transition"
+                                                    onClick={() => window.open(photo, '_blank')}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : null;
+                                })()}
+                            </div>
+                        )}
+
+                        {/* Payment Transactions Card (only show if present) */}
+                        {data.payments && data.payments.length > 0 && (
+                            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-bold text-slate-800 text-sm mb-4">Payment Transactions</h3>
+                                <div className="space-y-3">
+                                    {data.payments.map((p, idx) => (
+                                        <div key={idx} className="flex justify-between items-center text-xs border-b border-slate-50 pb-2 last:border-0 last:pb-0">
                                             <div>
-                                                <div className="text-xs font-medium text-blue-800 mb-2">Photos:</div>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {photos.map((photo, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={photo}
-                                                            alt={`Remarks photo ${index + 1}`}
-                                                            className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition"
-                                                            onClick={() => window.open(photo, '_blank')}
-                                                        />
-                                                    ))}
-                                                </div>
+                                                <div className="font-bold text-slate-800">₹{Number(p.paid_amount).toFixed(2)}</div>
+                                                <div className="text-[10px] text-slate-400">{new Date(p.createdAt).toLocaleDateString()}</div>
                                             </div>
-                                        ) : null;
-                                    })()}
+                                            {p.notes && <span className="text-[10px] text-slate-400 italic max-w-[120px] truncate">{p.notes}</span>}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
 
-                        {/* Action Buttons */}
+                        {/* Back actions */}
                         <div className="space-y-3">
-                            <Link
-                                href="/account"
-                                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
+                            <Link href="/account" className="w-full flex items-center justify-center px-5 py-3 bg-[#EF6A22] text-white rounded-xl text-sm font-bold hover:bg-[#d85d1c] transition shadow-sm">
                                 My Orders
                             </Link>
-                            <Link
-                                href="/products"
-                                className="w-full bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3 px-6 rounded-xl border-2 border-slate-200 hover:border-slate-300 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                                Continue Shopping
-                            </Link>
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
         </div>
     );
