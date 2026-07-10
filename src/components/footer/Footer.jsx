@@ -313,7 +313,7 @@ const Footer = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                         <div className="text-sm text-gray-400">
-                            © {new Date().getFullYear()} Shuddharth India Pvt Ltd. All rights reserved. 
+                            © {new Date().getFullYear()} CLY. All rights reserved by Shuddharth India Pvt Ltd. 
                         </div>
                         <div className="flex flex-wrap gap-6 text-sm">
                             <Link href="/terms-and-conditions" className="text-gray-400 hover:text-white transition-colors">
