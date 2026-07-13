@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { addToCart as addToCartApi } from '@/utils/cartService'
 import { toast } from 'react-toastify'
 import { BsCart3, BsHeart, BsStarFill, BsStarHalf, BsStar } from 'react-icons/bs'
+import { useDiscountPercent } from '@/hooks/useDiscountPercent'
 
 const renderStars = (rating) => {
     const stars = [];
@@ -27,6 +28,11 @@ const renderStars = (rating) => {
 const ProductCard = ({ product }) => {
     const [buttonState, setButtonState] = useState('idle') // 'idle' | 'adding' | 'success' | 'added'
     const router = useRouter();
+    const { discountPct } = useDiscountPercent()
+
+    // Prices: salePrice = actual Tally price; mrp = inflated original price
+    const salePrice = Number(product.price || 0)
+    const mrp = salePrice > 0 ? salePrice * (1 + discountPct / 100) : 0
 
     // Use minQty as the default quantity
     const quantity = product.minQty || 1;
@@ -46,7 +52,7 @@ const ProductCard = ({ product }) => {
                 featuredImage: product.image,
                 boxQty: 0,
                 units: quantity,
-                productPrice: Number(product.price || 0),
+                productPrice: salePrice,
             })
             toast(
                 <div className="flex items-center gap-2 text-sm font-bold justify-center">
@@ -99,9 +105,9 @@ const ProductCard = ({ product }) => {
                     priority={false}
                 />
                 
-                {/* Discount Tag (Placeholder logic) */}
+                {/* Discount Tag */}
                 <div className="absolute top-2 left-2 px-2 py-1 bg-[#ff4d4f] text-white rounded text-[10px] font-bold tracking-wide shadow-sm" style={{ fontFamily: 'var(--font-montserrat)' }}>
-                    {(product.inventory || 0) <= 0 ? 'Out of Stock' : '12% OFF'}
+                    {(product.inventory || 0) <= 0 ? 'Out of Stock' : `${Math.round(discountPct)}% OFF`}
                 </div>
 
                 {/* Wishlist Button */}
@@ -133,10 +139,12 @@ const ProductCard = ({ product }) => {
 
                 {/* Pricing & Min Order */}
                 <div className='flex items-end justify-start gap-2 mb-1'>
-                    <p className='text-lg font-bold text-[#EF233C] leading-none'>₹{Number(product.price || 0).toFixed(0)}</p>
-                    <p className='text-[11px] text-gray-400 line-through leading-none mb-[2px]'>
-                        ₹{Number(product.price || 0) > 0 ? (Number(product.price || 0) * 1.12).toFixed(0) : '0'}
-                    </p>
+                    <p className='text-lg font-bold text-[#EF233C] leading-none'>₹{salePrice.toFixed(0)}</p>
+                    {discountPct > 0 && mrp > 0 && (
+                        <p className='text-[11px] text-gray-400 line-through leading-none mb-[2px]'>
+                            ₹{mrp.toFixed(0)}
+                        </p>
+                    )}
                 </div>
                 <div className="text-[11px] text-gray-500 mb-3">
                     Min. Order: {quantity} {quantity === 1 ? 'Pc' : 'Pcs'}

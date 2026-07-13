@@ -111,11 +111,11 @@ const Header = () => {
                 <div className="flex justify-end items-center gap-6 text-sm font-medium">
                     <div className="flex items-center gap-2">
                         <BiPhone size={18} />
-                        <span>Bulk Orders: +91 98765 43210</span>
+                        <span>Bulk Orders: +91 99589 66630</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <BiEnvelope size={18} />
-                        <a href="mailto:support@percyletters.com" className="hover:underline">support@percyletters.com</a>
+                        <a href="mailto:cursivelettersly@gmail.com" className="hover:underline"> cursivelettersly@gmail.com</a>
                     </div>
                 </div>
             </div>
