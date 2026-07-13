@@ -15,6 +15,8 @@ const mapApiProductToCard = (p) => ({
     price: p.productPrice || 0,
     sku: p.sku,
     inventory: p.inventory || 0,
+    avgRating: p.avgRating || 0,
+    reviewCount: p.reviewCount || 0,
 })
 
 const ProductGrid = ({ page = 1, limit = 20, search = '' }) => {
@@ -28,7 +30,7 @@ const ProductGrid = ({ page = 1, limit = 20, search = '' }) => {
             setLoading(true)
             setError('')
             try {
-                const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api'
+                const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api'
                 const url = new URL(baseUrl + '/products/list')
                 url.searchParams.set('page', String(page))
                 url.searchParams.set('limit', String(limit))

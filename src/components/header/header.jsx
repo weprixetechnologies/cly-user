@@ -18,6 +18,7 @@ const navItems = [
     { name: 'Home', href: '/' },
     { name: 'Shop', href: '/products' },
     { name: 'Categories', href: '/categories' },
+    { name: 'Blog', href: '/blog' },
     { name: 'About Us', href: '/about' },
     { name: 'Contact', href: '/contact' },
     { name: 'Affiliate Dashboard', href: '/affiliate-dashboard' },

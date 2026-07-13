@@ -158,6 +158,11 @@ const Footer = () => {
                                     About Us
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/blog" className="text-gray-300 hover:text-white transition-colors text-sm">
+                                    Blog
+                                </Link>
+                            </li>
 
 
                         </ul>
@@ -313,7 +318,7 @@ const Footer = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                         <div className="text-sm text-gray-400">
-                            © {new Date().getFullYear()} CLY. All rights reserved by Shuddharth India Pvt Ltd. 
+                            © {new Date().getFullYear()} CLY. All rights reserved by SHUDDHARTH INDIA PRIVATE LIMITED. 
                         </div>
                         <div className="flex flex-wrap gap-6 text-sm">
                             <Link href="/terms-and-conditions" className="text-gray-400 hover:text-white transition-colors">

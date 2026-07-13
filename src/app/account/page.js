@@ -4,11 +4,14 @@ import { useRouter } from 'next/navigation';
 import api from '@/utils/axiosInstance';
 import { getCookie } from '@/utils/cookieUtil';
 import { getUserAddresses } from '@/utils/addressService';
+import { BsStarFill, BsStar, BsStarHalf } from 'react-icons/bs';
+import { BiX } from 'react-icons/bi';
 
 const Tabs = {
     PROFILE: 'PROFILE',
     ORDERS: 'ORDERS',
     ADDRESSES: 'ADDRESSES',
+    REVIEWS: 'REVIEWS',
 };
 
 export default function AccountPage() {
@@ -24,6 +27,152 @@ export default function AccountPage() {
     const [photoPreview, setPhotoPreview] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
 
+    // Reviews states
+    const [userReviews, setUserReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+
+    // Edit Review Modal states
+    const [editingReview, setEditingReview] = useState(null);
+    const [editRating, setEditRating] = useState(5);
+    const [editHoverRating, setEditHoverRating] = useState(0);
+    const [editTitle, setEditTitle] = useState('');
+    const [editBody, setEditBody] = useState('');
+    const [editImages, setEditImages] = useState([]);
+    const [isUploadingEditImages, setIsUploadingEditImages] = useState(false);
+    const [savingEditReview, setSavingEditReview] = useState(false);
+
+    const loadUserReviews = async () => {
+        setReviewsLoading(true);
+        try {
+            const res = await api.get('/users/me/reviews');
+            if (res.data?.success) {
+                setUserReviews(res.data.data || []);
+            }
+        } catch (err) {
+            console.error('Error fetching user reviews:', err);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewID) => {
+        if (!window.confirm('Are you sure you want to delete this review?')) return;
+        try {
+            const res = await api.delete(`/reviews/${reviewID}`);
+            if (res.data?.success) {
+                alert('Review deleted successfully');
+                loadUserReviews();
+            }
+        } catch (err) {
+            console.error('Error deleting review:', err);
+            alert(err.response?.data?.message || 'Failed to delete review');
+        }
+    };
+
+    const handleEditClick = (review) => {
+        setEditingReview(review);
+        setEditRating(review.rating);
+        setEditTitle(review.title || '');
+        setEditBody(review.body || '');
+        setEditImages(review.images || []);
+    };
+
+    const handleEditImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        if (editImages.length + files.length > 3) {
+            alert('Maximum 3 images are allowed.');
+            return;
+        }
+
+        setIsUploadingEditImages(true);
+        try {
+            // Bunny CDN configuration
+            const storageZone = 'cly-bunny';
+            const storageRegion = 'storage.bunnycdn.com';
+            const pullZoneUrl = 'https://cly-pull-bunny.b-cdn.net';
+            const apiKey = '22cfd8b3-8021-40a3-b100a9d48bc0-7dc3-4654';
+
+            const uploadedUrls = [];
+            for (const file of files) {
+                const randStr = Math.random().toString(36).substring(2, 9);
+                const fileName = encodeURIComponent(`review_${editingReview?.id || 'edit'}_${Date.now()}_${randStr}_${file.name}`);
+                const uploadUrl = `https://${storageRegion}/${storageZone}/${fileName}`;
+                const publicUrl = `${pullZoneUrl}/${fileName}`;
+
+                const res = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    headers: {
+                        AccessKey: apiKey,
+                        'Content-Type': file.type,
+                    },
+                    body: file,
+                });
+
+                if (!res.ok) throw new Error(`Upload failed with status: ${res.status}`);
+                uploadedUrls.push(publicUrl);
+            }
+
+            setEditImages(prev => [...prev, ...uploadedUrls]);
+            alert('Images uploaded successfully!');
+        } catch (err) {
+            console.error('Error uploading images to Bunny CDN:', err);
+            alert('Failed to upload images.');
+        } finally {
+            setIsUploadingEditImages(false);
+        }
+    };
+
+    const handleSaveEdit = async (e) => {
+        e.preventDefault();
+        if (editRating < 1 || editRating > 5) {
+            alert('Rating must be between 1 and 5.');
+            return;
+        }
+
+        setSavingEditReview(true);
+        try {
+            const res = await api.put(`/reviews/${editingReview.id}`, {
+                rating: editRating,
+                title: editTitle,
+                body: editBody,
+                images: editImages
+            });
+            if (res.data?.success) {
+                alert(res.data.message || 'Review updated successfully');
+                setEditingReview(null);
+                loadUserReviews();
+            }
+        } catch (err) {
+            console.error('Error updating review:', err);
+            alert(err.response?.data?.message || 'Failed to update review');
+        } finally {
+            setSavingEditReview(false);
+        }
+    };
+
+    const handleRemoveEditImage = (idxToRemove) => {
+        setEditImages(prev => prev.filter((_, idx) => idx !== idxToRemove));
+    };
+
+    const renderStars = (rating) => {
+        const stars = [];
+        const fullStars = Math.floor(rating);
+        const hasHalf = rating % 1 >= 0.5;
+        
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+                stars.push(<BsStarFill key={i} className="text-amber-400" size={12} />);
+            } else if (i === fullStars + 1 && hasHalf) {
+                stars.push(<BsStarHalf key={i} className="text-amber-400" size={12} />);
+            } else {
+                stars.push(<BsStar key={i} className="text-gray-200" size={12} />);
+            }
+        }
+        return stars;
+    };
+
     useEffect(() => {
         const cookieUid = getCookie('uid');
         if (!cookieUid) {
@@ -38,10 +187,11 @@ export default function AccountPage() {
         (async () => {
             try {
                 setLoading(true);
-                const [uRes, oRes, aRes] = await Promise.all([
+                const [uRes, oRes, aRes, rRes] = await Promise.all([
                     api.get(`/users/${uid}`),
                     api.get(`/order/user/${uid}/orders/detailed`),
-                    getUserAddresses().catch(() => ({ data: [] })) // Handle addresses gracefully
+                    getUserAddresses().catch(() => ({ data: [] })), // Handle addresses gracefully
+                    api.get('/users/me/reviews').catch(() => ({ data: { data: [] } }))
                 ]);
                 const u = uRes?.data?.user || null;
                 setUser(u);
@@ -52,6 +202,7 @@ export default function AccountPage() {
                 });
                 setOrders(oRes?.data?.data || []);
                 setAddresses(aRes?.data || []);
+                setUserReviews(rRes?.data?.data || []);
             } finally { setLoading(false); }
         })();
     }, [uid]);
@@ -83,10 +234,10 @@ export default function AccountPage() {
 
         try {
             // Bunny CDN configuration
-            const storageZone = 'ithyaraa';
-            const storageRegion = 'sg.storage.bunnycdn.com';
-            const pullZoneUrl = 'https://ithyaraa.b-cdn.net';
-            const apiKey = '7017f7c4-638b-48ab-add3858172a8-f520-4b88';
+            const storageZone = 'cly-bunny';
+            const storageRegion = 'storage.bunnycdn.com';
+            const pullZoneUrl = 'https://cly-pull-bunny.b-cdn.net';
+            const apiKey = '22cfd8b3-8021-40a3-b100a9d48bc0-7dc3-4654';
 
             // Upload function
             const uploadToBunny = async (file) => {
@@ -179,6 +330,7 @@ export default function AccountPage() {
                             <button onClick={() => setActive(Tabs.PROFILE)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.PROFILE ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Account Details</button>
                             <button onClick={() => setActive(Tabs.ORDERS)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.ORDERS ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Order History</button>
                             <button onClick={() => setActive(Tabs.ADDRESSES)} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.ADDRESSES ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>Addresses</button>
+                            <button onClick={() => { setActive(Tabs.REVIEWS); loadUserReviews(); }} className={`w-full text-left px-3 py-2 rounded-lg border transition ${active === Tabs.REVIEWS ? 'border-[#EF6A22] bg-orange-50 text-[#EF6A22]' : 'border-gray-200 text-gray-700 hover:border-orange-200 hover:bg-orange-50'}`}>My Reviews</button>
                             <button onClick={handleSignOut} className="w-full text-left px-3 py-2 rounded-lg border border-gray-200 text-red-600 hover:bg-red-50 transition">Sign Out</button>
                         </nav>
                     </aside>
@@ -193,6 +345,7 @@ export default function AccountPage() {
                             <button onClick={() => setActive(Tabs.PROFILE)} className={`py-3 -mb-px border-b-2 transition ${active === Tabs.PROFILE ? 'border-[#EF6A22] text-[#EF6A22]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>My Profile</button>
                             <button onClick={() => setActive(Tabs.ORDERS)} className={`py-3 -mb-px border-b-2 transition ${active === Tabs.ORDERS ? 'border-[#EF6A22] text-[#EF6A22]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Orders</button>
                             <button onClick={() => setActive(Tabs.ADDRESSES)} className={`py-3 -mb-px border-b-2 transition ${active === Tabs.ADDRESSES ? 'border-[#EF6A22] text-[#EF6A22]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Addresses</button>
+                            <button onClick={() => { setActive(Tabs.REVIEWS); loadUserReviews(); }} className={`py-3 -mb-px border-b-2 transition ${active === Tabs.REVIEWS ? 'border-[#EF6A22] text-[#EF6A22]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>My Reviews</button>
                         </div>
 
                         {/* Tab content */}
@@ -483,6 +636,238 @@ export default function AccountPage() {
                                     </div>
                                 ))}
                             </section>
+                        )}
+
+                        {active === Tabs.REVIEWS && (
+                            <section className="mt-6 space-y-6">
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div className="font-semibold text-gray-900">My Product Reviews</div>
+                                    <div className="text-xs text-gray-500 font-medium">Manage and view your submitted reviews</div>
+                                </div>
+                                {reviewsLoading ? (
+                                    <div className="text-center py-12 text-sm text-gray-500">Loading reviews...</div>
+                                ) : userReviews.length === 0 ? (
+                                    <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl bg-white">
+                                        <div className="text-gray-400 text-sm font-medium mb-2">You haven't written any reviews yet.</div>
+                                        <p className="text-xs text-gray-500">Reviews help other buyers make informed choices!</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {userReviews.map((review) => (
+                                            <div key={review.id} className="border border-gray-200 rounded-2xl p-5 bg-white shadow-sm flex flex-col gap-4">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 pb-3">
+                                                    {/* Product info */}
+                                                    <div className="flex items-center gap-3">
+                                                        <img 
+                                                            src={review.productFeaturedImage || 'https://picsum.photos/150/150?random=product'} 
+                                                            alt={review.productName} 
+                                                            className="w-12 h-12 object-cover rounded-xl border border-gray-100"
+                                                        />
+                                                        <div>
+                                                            <div className="text-sm font-bold text-gray-900">{review.productName || 'Product'}</div>
+                                                            <div className="text-xs text-gray-400 font-medium">Reviewed on {new Date(review.createdAt).toLocaleDateString()}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Moderation Status Badges */}
+                                                    <div>
+                                                        {review.status === 'pending' && (
+                                                            <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 rounded-full">
+                                                                Pending Review
+                                                            </span>
+                                                        )}
+                                                        {review.status === 'approved' && (
+                                                            <span className="text-xs font-semibold px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full">
+                                                                Approved
+                                                            </span>
+                                                        )}
+                                                        {review.status === 'rejected' && (
+                                                            <span className="text-xs font-semibold px-2.5 py-1 bg-red-50 border border-red-200 text-red-700 rounded-full">
+                                                                Rejected
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Content */}
+                                                <div>
+                                                    <div className="flex items-center gap-0.5 mb-2">
+                                                        {renderStars(review.rating)}
+                                                    </div>
+                                                    {review.title && <h4 className="text-sm font-bold text-gray-900 mb-1">{review.title}</h4>}
+                                                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{review.body || 'No description provided.'}</p>
+                                                </div>
+
+                                                {/* Images */}
+                                                {review.images && review.images.length > 0 && (
+                                                    <div className="flex items-center gap-2">
+                                                        {review.images.map((imgUrl, idx) => (
+                                                            <img 
+                                                                key={idx}
+                                                                src={imgUrl}
+                                                                alt={`Review photo ${idx + 1}`}
+                                                                className="w-14 h-14 object-cover rounded-lg border border-gray-100"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Store Reply */}
+                                                {review.storeReply && (
+                                                    <div className="p-3 bg-orange-50/40 border border-orange-100 rounded-xl mt-1 text-xs">
+                                                        <div className="font-bold text-[#EF6A22] mb-1">🏢 Store Response:</div>
+                                                        <p className="text-gray-700 leading-relaxed">{review.storeReply}</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Actions */}
+                                                <div className="flex gap-2 justify-end pt-2 border-t border-gray-50">
+                                                    <button
+                                                        onClick={() => handleEditClick(review)}
+                                                        className="px-3 py-1.5 border border-orange-200 text-[#EF6A22] text-xs font-bold rounded-lg hover:bg-orange-50 transition"
+                                                    >
+                                                        Edit Review
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteReview(review.id)}
+                                                        className="px-3 py-1.5 border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 transition"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {/* Edit Review Modal */}
+                        {editingReview && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setEditingReview(null)} />
+                                <div className="relative bg-white border border-gray-200 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200">
+                                    <button 
+                                        onClick={() => setEditingReview(null)}
+                                        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
+                                    >
+                                        <BiX size={20} />
+                                    </button>
+
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Edit Review</h3>
+                                    <p className="text-xs text-gray-500 mb-6 font-medium">Update your review for: <span className="font-bold text-gray-800">{editingReview.productName}</span></p>
+
+                                    <form onSubmit={handleSaveEdit} className="space-y-5">
+                                        {/* Stars Selector */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Your Rating *</label>
+                                            <div className="flex items-center gap-1.5 text-2xl">
+                                                {[1, 2, 3, 4, 5].map(val => (
+                                                    <button
+                                                        key={val}
+                                                        type="button"
+                                                        onMouseEnter={() => setEditHoverRating(val)}
+                                                        onMouseLeave={() => setEditHoverRating(0)}
+                                                        onClick={() => setEditRating(val)}
+                                                        className="focus:outline-none transition-transform active:scale-95 text-yellow-400"
+                                                    >
+                                                        {(editHoverRating || editRating) >= val ? <BsStarFill /> : <BsStar className="text-gray-300" />}
+                                                    </button>
+                                                ))}
+                                                <span className="text-xs text-gray-500 font-bold ml-2">
+                                                    {(() => {
+                                                        const current = editHoverRating || editRating;
+                                                        if (current === 5) return 'Excellent';
+                                                        if (current === 4) return 'Good';
+                                                        if (current === 3) return 'Average';
+                                                        if (current === 2) return 'Poor';
+                                                        return 'Terrible';
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Review Title */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Title (Optional)</label>
+                                            <input
+                                                type="text"
+                                                value={editTitle}
+                                                onChange={(e) => setEditTitle(e.target.value)}
+                                                placeholder="Example: Outstanding quality / Great value for money"
+                                                maxLength={150}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none transition"
+                                            />
+                                        </div>
+
+                                        {/* Review Body */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Review Details</label>
+                                            <textarea
+                                                value={editBody}
+                                                onChange={(e) => setEditBody(e.target.value)}
+                                                placeholder="What did you like or dislike? How was the service?"
+                                                rows={4}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none transition resize-none"
+                                            />
+                                        </div>
+
+                                        {/* Photo Upload */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Add Photos (Max 3)</label>
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {/* Existing Upload Previews */}
+                                                {editImages.map((imgUrl, idx) => (
+                                                    <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
+                                                        <img src={imgUrl} alt="uploaded preview" className="w-full h-full object-cover" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveEditImage(idx)}
+                                                            className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <BiX size={18} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                                {/* File selector trigger */}
+                                                {editImages.length < 3 && (
+                                                    <label className={`w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#EF6A22] transition bg-gray-50/50 flex flex-col items-center justify-center cursor-pointer ${isUploadingEditImages ? 'pointer-events-none opacity-50' : ''}`}>
+                                                        <span className="text-xl">+</span>
+                                                        <span className="text-[10px] text-gray-400 font-medium">Upload</span>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            multiple
+                                                            onChange={handleEditImageUpload}
+                                                            className="hidden"
+                                                        />
+                                                    </label>
+                                                )}
+                                            </div>
+                                            {isUploadingEditImages && <div className="text-[10px] text-orange-600 font-bold mt-1.5 animate-pulse">Uploading photos...</div>}
+                                        </div>
+
+                                        {/* Submit actions */}
+                                        <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingReview(null)}
+                                                className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={savingEditReview || isUploadingEditImages}
+                                                className="px-5 py-2.5 bg-[#EF6A22] hover:bg-[#d85c1b] text-white font-bold text-sm rounded-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-[0.98]"
+                                            >
+                                                {savingEditReview ? 'Saving...' : 'Save Changes'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         )}
                     </main>
                 </div>

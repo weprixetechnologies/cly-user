@@ -15,6 +15,8 @@ const mapApiProductToCard = (p) => ({
     price: p.productPrice || 0,
     sku: p.sku,
     inventory: p.inventory || 0,
+    avgRating: p.avgRating || 0,
+    reviewCount: p.reviewCount || 0,
 })
 
 const FeaturedProducts = ({ products = [] }) => {

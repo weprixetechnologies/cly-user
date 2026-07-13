@@ -5,7 +5,24 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation';
 import { addToCart as addToCartApi } from '@/utils/cartService'
 import { toast } from 'react-toastify'
-import { BsCart3, BsHeart } from 'react-icons/bs'
+import { BsCart3, BsHeart, BsStarFill, BsStarHalf, BsStar } from 'react-icons/bs'
+
+const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalf = rating % 1 >= 0.5;
+    
+    for (let i = 1; i <= 5; i++) {
+        if (i <= fullStars) {
+            stars.push(<BsStarFill key={i} className="text-amber-400" size={11} />);
+        } else if (i === fullStars + 1 && hasHalf) {
+            stars.push(<BsStarHalf key={i} className="text-amber-400" size={11} />);
+        } else {
+            stars.push(<BsStar key={i} className="text-gray-200" size={11} />);
+        }
+    }
+    return stars;
+};
 
 const ProductCard = ({ product }) => {
     const [buttonState, setButtonState] = useState('idle') // 'idle' | 'adding' | 'success' | 'added'
@@ -98,8 +115,17 @@ const ProductCard = ({ product }) => {
                 <h3 className='text-sm font-semibold text-gray-900 line-clamp-2 leading-tight mb-1 cursor-pointer hover:text-[#004aad] transition-colors' onClick={() => router.push(`/products/${product.id}`)}>
                     {product.name}
                 </h3>
-                <div className='text-[11px] text-gray-400 mb-2'>
+                <div className='text-[11px] text-gray-400 mb-1'>
                     SKU: {product.sku || '—'}
+                </div>
+                
+                {/* Star Rating Row */}
+                <div className="flex items-center gap-1 mb-2">
+                    <div className="flex items-center gap-0.5">
+                        {renderStars(product.avgRating || 0)}
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-700">{Number(product.avgRating || 0).toFixed(1)}</span>
+                    <span className="text-[10px] text-gray-400">({product.reviewCount || 0})</span>
                 </div>
                 
                 {/* Spacer to push price and button to bottom */}
