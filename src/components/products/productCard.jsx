@@ -30,9 +30,13 @@ const ProductCard = ({ product }) => {
     const router = useRouter();
     const { discountPct } = useDiscountPercent()
 
-    // Prices: salePrice = actual Tally price; mrp = inflated original price
+    // Prices: salePrice = actual Tally price (what customer pays)
+    // mrp = back-calculated original price so that: mrp - pct% = salePrice
+    // Formula: mrp = salePrice / (1 - pct/100)
     const salePrice = Number(product.price || 0)
-    const mrp = salePrice > 0 ? salePrice * (1 + discountPct / 100) : 0
+    const mrp = salePrice > 0 && discountPct > 0 && discountPct < 100
+        ? salePrice / (1 - discountPct / 100)
+        : 0
 
     // Use minQty as the default quantity
     const quantity = product.minQty || 1;
