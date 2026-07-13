@@ -1,7 +1,7 @@
 export const revalidate = 3600; // Cache sitemap for 1 hour
 
 export default async function sitemap() {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://cursiveletters.in';
 
     // 1. Static Routes

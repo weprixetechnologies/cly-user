@@ -6,7 +6,7 @@ import ViewCounter from './ViewCounter';
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchPostDetail(slug) {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
         const res = await fetch(`${apiBase}/blog/posts/${slug}`, { next: { revalidate: 60 } });
         if (!res.ok) return null;
@@ -91,10 +91,10 @@ export default async function BlogPostDetailPage({ params }) {
     const h2Regex = /<h2[^>]*>(.*?)<\/h2>/g;
     let match;
     let index = 0;
-    
+
     // Create an editable copy of the content to inject IDs to h2 tags for anchor jumping
     let processedContent = post.content;
-    
+
     // Simple replacement to inject unique anchor IDs to headings
     processedContent = processedContent.replace(/<h2([^>]*)>(.*?)<\/h2>/g, (original, attributes, text) => {
         const id = `heading-${index++}`;
@@ -169,7 +169,7 @@ export default async function BlogPostDetailPage({ params }) {
                 <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 font-serif mt-3 mb-6 leading-tight tracking-tight">
                     {post.title}
                 </h1>
-                
+
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8 border-b border-gray-200/60 pb-8">
                     <div className="flex items-center gap-2.5">
                         {post.authorPhoto ? (

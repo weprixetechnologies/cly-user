@@ -4,7 +4,7 @@ import Image from 'next/image';
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
 async function fetchBlogData({ search = '', categorySlug = '', tagSlug = '', page = 1, limit = 9 }) {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
         const url = new URL(`${apiBase}/blog/posts`);
         url.searchParams.set('page', String(page));
@@ -23,7 +23,7 @@ async function fetchBlogData({ search = '', categorySlug = '', tagSlug = '', pag
 }
 
 async function fetchCategories() {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:9878/api';
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
         const res = await fetch(`${apiBase}/blog/categories`, { next: { revalidate: 300 } });
         if (!res.ok) return [];
@@ -48,12 +48,12 @@ export default async function BlogLandingPage({ searchParams }) {
     ]);
 
     // Separate featured post if it is page 1 and no search filter
-    const featuredPost = (currentPage === 1 && !search && !selectedCategory) 
-        ? posts.find(p => p.is_featured) || posts[0] 
+    const featuredPost = (currentPage === 1 && !search && !selectedCategory)
+        ? posts.find(p => p.is_featured) || posts[0]
         : null;
-    
-    const displayPosts = featuredPost 
-        ? posts.filter(p => p.id !== featuredPost.id) 
+
+    const displayPosts = featuredPost
+        ? posts.filter(p => p.id !== featuredPost.id)
         : posts;
 
     return (
@@ -75,11 +75,10 @@ export default async function BlogLandingPage({ searchParams }) {
                 <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
                     <Link
                         href="/blog"
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                            !selectedCategory 
-                                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25' 
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${!selectedCategory
+                                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         All Articles
                     </Link>
@@ -87,11 +86,10 @@ export default async function BlogLandingPage({ searchParams }) {
                         <Link
                             key={cat.id}
                             href={`/blog?category=${cat.slug}${search ? `&search=${search}` : ''}`}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                selectedCategory === cat.slug
-                                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25' 
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.slug
+                                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                                }`}
                         >
                             {cat.name}
                         </Link>
@@ -185,7 +183,7 @@ export default async function BlogLandingPage({ searchParams }) {
                                 <div className="flex items-center gap-4 text-xs text-gray-500">
                                     <span>{featuredPost.reading_time_min || 1} min read</span>
                                     <Link href={`/blog/${featuredPost.slug}`} className="flex items-center gap-1 font-bold text-amber-600 hover:text-amber-700 text-sm">
-                                        Read Post 
+                                        Read Post
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
@@ -275,7 +273,7 @@ export default async function BlogLandingPage({ searchParams }) {
                                             {post.authorName || 'Expert'}
                                         </span>
                                     </div>
-                                    
+
                                     <Link href={`/blog/${post.slug}`} className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
                                         Read Article
                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,11 +307,10 @@ export default async function BlogLandingPage({ searchParams }) {
                             <Link
                                 key={pNum}
                                 href={`/blog?page=${pNum}${selectedCategory ? `&category=${selectedCategory}` : ''}${search ? `&search=${search}` : ''}`}
-                                className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${
-                                    pNum === currentPage
+                                className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${pNum === currentPage
                                         ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
                                         : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
-                                }`}
+                                    }`}
                             >
                                 {pNum}
                             </Link>

@@ -224,7 +224,7 @@ export default function ProductDetail({ params }) {
                 setModalTitle('');
                 setModalBody('');
                 setModalImages([]);
-                
+
                 // Reload states
                 await loadSummary();
                 await loadUserReviews();
@@ -249,7 +249,7 @@ export default function ProductDetail({ params }) {
         const stars = [];
         const fullStars = Math.floor(rating);
         const hasHalf = rating % 1 >= 0.5;
-        
+
         for (let i = 1; i <= 5; i++) {
             if (i <= fullStars) {
                 stars.push(<BsStarFill key={i} className="text-amber-400" size={14} />);
@@ -292,7 +292,7 @@ export default function ProductDetail({ params }) {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`http://localhost:9878/api/products/${productID}`);
+                const response = await fetch(`https://api.cursiveletters.in/api/products/${productID}`);
                 const data = await response.json();
                 setProduct(data.data);
                 console.log(data.minQty);
@@ -529,7 +529,7 @@ export default function ProductDetail({ params }) {
 
                             {/* Ratings & Sales (Dynamic) */}
                             <div className="flex items-center flex-wrap gap-4 text-sm mb-5">
-                                <div 
+                                <div
                                     className="flex items-center gap-1.5 text-amber-400 cursor-pointer hover:opacity-80 transition-opacity"
                                     onClick={() => {
                                         const el = document.getElementById('reviews-section');
@@ -720,11 +720,11 @@ export default function ProductDetail({ params }) {
                                 </h3>
                                 <p className="text-xs text-gray-500 mt-1">Read reviews and share your experience with other customers</p>
                             </div>
-                            
+
                             {/* Write Review Trigger Button */}
                             {isLoggedIn ? (
                                 !hasReviewed ? (
-                                    <button 
+                                    <button
                                         onClick={() => setIsModalOpen(true)}
                                         className="px-4 py-2.5 bg-[#EF6A22] hover:bg-[#d85c1b] text-white font-bold text-sm rounded-xl transition duration-200 active:scale-[0.98] shadow-sm flex items-center gap-1.5"
                                     >
@@ -736,7 +736,7 @@ export default function ProductDetail({ params }) {
                                     </span>
                                 )
                             ) : (
-                                <button 
+                                <button
                                     onClick={() => window.location.href = '/login'}
                                     className="px-4 py-2.5 border border-gray-200 hover:border-orange-200 hover:bg-orange-50/30 text-gray-700 font-bold text-sm rounded-xl transition duration-200 active:scale-[0.98] shadow-sm flex items-center gap-1.5"
                                 >
@@ -763,8 +763,8 @@ export default function ProductDetail({ params }) {
                                     const percent = summary.reviewCount > 0 ? Math.round((count / summary.reviewCount) * 100) : 0;
                                     const isFiltered = ratingFilter === stars;
                                     return (
-                                        <div 
-                                            key={stars} 
+                                        <div
+                                            key={stars}
                                             onClick={() => {
                                                 if (summary.reviewCount === 0) return;
                                                 setRatingFilter(isFiltered ? null : stars);
@@ -774,8 +774,8 @@ export default function ProductDetail({ params }) {
                                         >
                                             <span className="w-10 text-gray-600 font-semibold group-hover:text-[#EF6A22] transition-colors">{stars} star</span>
                                             <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden border border-gray-200/50">
-                                                <div 
-                                                    className="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-500" 
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-500"
                                                     style={{ width: `${percent}%` }}
                                                 />
                                             </div>
@@ -791,8 +791,8 @@ export default function ProductDetail({ params }) {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 text-sm">
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-gray-700">Sort:</span>
-                                <select 
-                                    value={reviewsSort} 
+                                <select
+                                    value={reviewsSort}
                                     onChange={(e) => {
                                         setReviewsSort(e.target.value);
                                         setCurrentPage(1);
@@ -805,13 +805,13 @@ export default function ProductDetail({ params }) {
                                     <option value="rating_low">Lowest Rated</option>
                                 </select>
                             </div>
-                            
+
                             {ratingFilter && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-gray-500 font-medium">
                                         Filtering: {ratingFilter} star reviews
                                     </span>
-                                    <button 
+                                    <button
                                         onClick={() => setRatingFilter(null)}
                                         className="text-xs text-[#EF6A22] hover:text-[#d85c1b] underline font-bold"
                                     >
@@ -826,8 +826,8 @@ export default function ProductDetail({ params }) {
                             <div className="py-12 text-center text-sm text-gray-500">Loading reviews...</div>
                         ) : reviews.length === 0 ? (
                             <div className="py-12 text-center text-sm text-gray-400 font-medium border border-dashed border-gray-200 rounded-2xl">
-                                {ratingFilter 
-                                    ? `No ${ratingFilter} star reviews found for this product.` 
+                                {ratingFilter
+                                    ? `No ${ratingFilter} star reviews found for this product.`
                                     : 'No reviews found. Be the first to write a review!'}
                             </div>
                         ) : (
@@ -838,8 +838,8 @@ export default function ProductDetail({ params }) {
                                             <div className="flex items-start justify-between gap-4">
                                                 {/* Reviewer Meta */}
                                                 <div className="flex items-center gap-3">
-                                                    <img 
-                                                        src={review.reviewerPhoto || 'https://picsum.photos/100/100?random=reviewer'} 
+                                                    <img
+                                                        src={review.reviewerPhoto || 'https://picsum.photos/100/100?random=reviewer'}
                                                         alt={review.reviewerName}
                                                         className="w-10 h-10 rounded-full object-cover border border-gray-100"
                                                     />
@@ -872,7 +872,7 @@ export default function ProductDetail({ params }) {
                                             {review.images && review.images.length > 0 && (
                                                 <div className="flex items-center gap-2 mt-1">
                                                     {review.images.map((imgUrl, idx) => (
-                                                        <img 
+                                                        <img
                                                             key={idx}
                                                             src={imgUrl}
                                                             alt={`Review photo ${idx + 1}`}
@@ -887,7 +887,7 @@ export default function ProductDetail({ params }) {
                                         <div className="mt-auto pt-3 border-t border-gray-100 flex flex-col gap-3">
                                             {/* Actions */}
                                             <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-                                                <button 
+                                                <button
                                                     onClick={() => handleVoteHelpful(review.id)}
                                                     className="flex items-center gap-1 hover:text-[#EF6A22] transition-colors"
                                                 >
@@ -895,7 +895,7 @@ export default function ProductDetail({ params }) {
                                                     <span>Helpful ({review.helpfulCount || 0})</span>
                                                 </button>
                                                 <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                                                <button 
+                                                <button
                                                     onClick={() => handleReportReview(review.id)}
                                                     className="flex items-center gap-1 hover:text-red-500 transition-colors"
                                                 >
@@ -924,7 +924,7 @@ export default function ProductDetail({ params }) {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex items-center justify-center gap-3 border-t border-gray-100 pt-6 mt-6">
-                                <button 
+                                <button
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
                                     className="px-3 py-1.5 border border-gray-200 hover:border-orange-200 hover:bg-orange-50/20 text-gray-600 hover:text-[#EF6A22] text-xs font-bold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -932,7 +932,7 @@ export default function ProductDetail({ params }) {
                                     Previous
                                 </button>
                                 <span className="text-xs text-gray-500 font-medium">Page {currentPage} of {totalPages}</span>
-                                <button 
+                                <button
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
                                     className="px-3 py-1.5 border border-gray-200 hover:border-orange-200 hover:bg-orange-50/20 text-gray-600 hover:text-[#EF6A22] text-xs font-bold rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
@@ -948,7 +948,7 @@ export default function ProductDetail({ params }) {
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
                             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
                             <div className="relative bg-white border border-gray-200 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200">
-                                <button 
+                                <button
                                     onClick={() => setIsModalOpen(false)}
                                     className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition"
                                 >
@@ -1074,16 +1074,16 @@ export default function ProductDetail({ params }) {
                     {/* Image Lightbox Modal */}
                     {imageLightboxUrl && (
                         <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onClick={() => setImageLightboxUrl(null)}>
-                            <button 
+                            <button
                                 onClick={() => setImageLightboxUrl(null)}
                                 className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
                             >
                                 <BiX size={24} />
                             </button>
-                            <img 
-                                src={imageLightboxUrl} 
-                                alt="Expanded view" 
-                                className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl animate-in zoom-in-95 duration-200" 
+                            <img
+                                src={imageLightboxUrl}
+                                alt="Expanded view"
+                                className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl animate-in zoom-in-95 duration-200"
                             />
                         </div>
                     )}
