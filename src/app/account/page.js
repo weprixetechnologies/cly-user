@@ -464,6 +464,10 @@ export default function AccountPage() {
                                                 customer_comment: order.customer_comment,
                                                 remarks: order.remarks,
                                                 remarks_photos: order.remarks_photos,
+                                                isDispatched: order.isDispatched,
+                                                awbNumber: order.awbNumber,
+                                                companyName: order.companyName,
+                                                trackingLink: order.trackingLink,
                                                 items: []
                                             };
                                         }
@@ -542,6 +546,31 @@ export default function AccountPage() {
                                                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                                     <div className="text-xs font-medium text-amber-800 mb-1">Your Comment:</div>
                                                     <div className="text-sm text-amber-800 whitespace-pre-wrap">{orderGroup.customer_comment}</div>
+                                                </div>
+                                            )}
+
+                                            {/* Shipment Tracking Details */}
+                                            {orderGroup.isDispatched && (
+                                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                    <div className="text-xs font-semibold text-blue-800 mb-1 flex items-center gap-1">
+                                                        📦 Shipment Dispatched
+                                                    </div>
+                                                    <div className="text-sm text-blue-700">
+                                                        {orderGroup.companyName && <span><strong>Courier:</strong> {orderGroup.companyName}</span>}
+                                                        {orderGroup.awbNumber && <span className="ml-4"><strong>AWB No:</strong> {orderGroup.awbNumber}</span>}
+                                                        {orderGroup.trackingLink && (
+                                                            <div className="mt-2">
+                                                                <a
+                                                                    href={orderGroup.trackingLink}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-xs text-[#EF6A22] font-semibold underline hover:opacity-85"
+                                                                >
+                                                                    Track Shipment 🔗
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
 

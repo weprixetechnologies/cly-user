@@ -138,6 +138,22 @@ export default function OrderSummary({ params }) {
                 )
             });
 
+            // Dispatch step
+            steps.push({
+                label: 'Dispatched',
+                description: info.isDispatched
+                    ? `Shipped via ${info.companyName || 'Courier'}`
+                    : 'Awaiting dispatch',
+                status: info.isDispatched ? 'completed' : 'upcoming',
+                icon: info.isDispatched ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                ) : (
+                    <div className="w-2.5 h-2.5 bg-slate-300 rounded-full"></div>
+                )
+            });
+
             // Payment step
             const isFullyPaid = totalPaid >= total;
             const paymentLabel = isFullyPaid ? 'Payment Received' : totalPaid > 0 ? 'Partially Paid' : 'Pending Payment';
@@ -517,6 +533,42 @@ export default function OrderSummary({ params }) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Shipment Tracking Card */}
+                        {info.isDispatched && (
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6 shadow-sm">
+                                <h3 className="font-bold text-blue-900 text-sm mb-4 flex items-center gap-2">
+                                    <span className="text-base">📦</span>
+                                    Shipment Tracking
+                                </h3>
+                                <div className="text-xs space-y-2 font-semibold text-slate-700">
+                                    {info.companyName && (
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-500">Courier Partner</span>
+                                            <span className="text-slate-900 font-extrabold">{info.companyName}</span>
+                                        </div>
+                                    )}
+                                    {info.awbNumber && (
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-500">AWB No</span>
+                                            <span className="text-slate-900 font-mono font-extrabold">{info.awbNumber}</span>
+                                        </div>
+                                    )}
+                                    {info.trackingLink && (
+                                        <div className="pt-2">
+                                            <a
+                                                href={info.trackingLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="w-full inline-flex items-center justify-center px-4 py-2 bg-[#EF6A22] text-white rounded-lg text-xs font-bold hover:bg-[#d85d1c] transition"
+                                            >
+                                                Track Shipment 🔗
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Delivery Address Card */}
                         {info.addressName && (

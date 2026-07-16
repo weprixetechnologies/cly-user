@@ -16,65 +16,48 @@ export default function Signup() {
         gstin: ''
     });
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState('form'); // 'form' or 'otp'
+    const [step, setStep] = useState('form'); // 'form' | 'otp'
     const [otp, setOtp] = useState('');
     const [otpLoading, setOtpLoading] = useState(false);
     const [verifying, setVerifying] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        // For phone number, only allow digits and limit to 10 characters
         if (name === 'phoneNumber') {
-            const numericValue = value.replace(/\D/g, '').slice(0, 10);
-            setFormData({
-                ...formData,
-                [name]: numericValue
-            });
+            setFormData({ ...formData, [name]: value.replace(/\D/g, '').slice(0, 10) });
         } else {
-            setFormData({
-                ...formData,
-                [name]: value
-            });
+            setFormData({ ...formData, [name]: value });
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation
         if (formData.password !== formData.confirmPassword) {
-            toast.error('Passwords do not match');
-            return;
+            toast.error('Passwords do not match'); return;
         }
-
         if (formData.password.length < 6) {
-            toast.error('Password must be at least 6 characters long');
-            return;
+            toast.error('Password must be at least 6 characters'); return;
         }
-
-        // Mobile number validation - must be exactly 10 digits
-        const phoneRegex = /^[0-9]{10}$/;
-        if (!phoneRegex.test(formData.phoneNumber)) {
-            toast.error('Phone number must be exactly 10 digits');
-            return;
+        if (!/^[0-9]{10}$/.test(formData.phoneNumber)) {
+            toast.error('Phone number must be exactly 10 digits'); return;
         }
 
         try {
             setLoading(true);
-            // Step 1: Send OTP to email
+            // OTP is now sent to phone via SMS
             const otpResponse = await axios.post('/auth/signup/send-otp', {
                 emailID: formData.emailID,
+                phoneNumber: formData.phoneNumber,
                 name: formData.name
             });
 
             if (otpResponse.data.success) {
-                toast.success('OTP sent to your email! Please check your inbox.');
+                toast.success(`OTP sent to +91 ${formData.phoneNumber}`);
                 setStep('otp');
             }
         } catch (error) {
-            const message = error.response?.data?.message || 'Failed to send OTP';
-            toast.error(message);
+            toast.error(error.response?.data?.message || 'Failed to send OTP');
         } finally {
             setLoading(false);
         }
@@ -83,18 +66,15 @@ export default function Signup() {
     const handleResendOTP = async () => {
         try {
             setOtpLoading(true);
-            const response = await axios.post('/auth/signup/send-otp', {
+            await axios.post('/auth/signup/send-otp', {
                 emailID: formData.emailID,
+                phoneNumber: formData.phoneNumber,
                 name: formData.name
             });
-
-            if (response.data.success) {
-                toast.success('OTP resent to your email!');
-                setOtp(''); // Clear the OTP input
-            }
+            toast.success(`OTP resent to +91 ${formData.phoneNumber}`);
+            setOtp('');
         } catch (error) {
-            const message = error.response?.data?.message || 'Failed to resend OTP';
-            toast.error(message);
+            toast.error(error.response?.data?.message || 'Failed to resend OTP');
         } finally {
             setOtpLoading(false);
         }
@@ -102,13 +82,10 @@ export default function Signup() {
 
     const handleVerifyOTP = async () => {
         if (!otp || otp.length !== 6) {
-            toast.error('Please enter a valid 6-digit OTP');
-            return;
+            toast.error('Please enter a valid 6-digit OTP'); return;
         }
-
         try {
             setVerifying(true);
-            // Verify OTP and register user in one call
             const registerResponse = await axios.post('/auth/register/user', {
                 name: formData.name,
                 emailID: formData.emailID,
@@ -116,250 +93,198 @@ export default function Signup() {
                 password: formData.password,
                 gstin: formData.gstin || null,
                 device: navigator.userAgent,
-                otp: otp
+                otp
             });
 
             if (registerResponse.data.success) {
                 const { tokens, user } = registerResponse.data;
-                
-                // Set authentication tokens and user ID
                 if (tokens?.accessToken && tokens?.refreshToken) {
                     setAuthTokens(tokens.accessToken, tokens.refreshToken);
                     if (user?.uid) setUserId(user.uid);
-                    
-                    toast.success('Account created successfully! Welcome to Cursive Letters.');
+                    toast.success('Account created! Welcome to Cursive Letters.');
                     router.push('/account');
                 } else {
-                    toast.success('Account created successfully! Please sign in.');
+                    toast.success('Account created! Please sign in.');
                     router.push('/login');
                 }
             }
         } catch (error) {
-            const message = error.response?.data?.message || 'Registration failed';
-            toast.error(message);
+            toast.error(error.response?.data?.message || 'Registration failed');
         } finally {
             setVerifying(false);
         }
     };
 
-    const handleOtpChange = (e) => {
-        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-        setOtp(value);
-    };
-
-    // OTP Verification Step
+    // ─── OTP Step ─────────────────────────────────────────────────────────────
     if (step === 'otp') {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full space-y-8">
-                    <div>
-                        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                            Verify Your Email
-                        </h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">
-                            We've sent a 6-digit OTP to <strong>{formData.emailID}</strong>
+            <div className="min-h-[70vh] grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10">
+                <div className="w-full max-w-md bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm p-8 space-y-6">
+                    {/* Header */}
+                    <div className="text-center space-y-1">
+                        <div className="mx-auto w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center mb-3">
+                            <svg className="w-7 h-7 text-[#EF6A22]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-semibold text-gray-900">Verify Mobile</h2>
+                        <p className="text-sm text-gray-500">
+                            OTP sent to <span className="font-semibold text-gray-700">+91 {formData.phoneNumber}</span>
                         </p>
                     </div>
-                    <div className="mt-8 space-y-6">
-                        <div>
-                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
-                                Enter OTP
-                            </label>
-                            <input
-                                id="otp"
-                                name="otp"
-                                type="text"
-                                inputMode="numeric"
-                                maxLength={6}
-                                required
-                                value={otp}
-                                onChange={handleOtpChange}
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm text-center text-2xl tracking-widest font-mono"
-                                placeholder="000000"
-                                autoFocus
-                            />
-                        </div>
 
-                        <div>
+                    {/* OTP Input */}
+                    <div className="space-y-2">
+                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700">Enter 6-digit OTP</label>
+                        <input
+                            id="otp"
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={6}
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                            placeholder="••••••"
+                            autoFocus
+                        />
+                    </div>
+
+                    {/* Verify Button */}
+                    <button
+                        type="button"
+                        onClick={handleVerifyOTP}
+                        disabled={verifying || otp.length !== 6}
+                        className="w-full py-2.5 rounded-lg text-white font-medium bg-[#EF6A22] hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {verifying ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                                Verifying…
+                            </span>
+                        ) : 'Verify & Create Account'}
+                    </button>
+
+                    {/* Resend + Back */}
+                    <div className="text-center space-y-2 text-sm">
+                        <p className="text-gray-500">
+                            Didn't receive it?{' '}
                             <button
                                 type="button"
-                                onClick={handleVerifyOTP}
-                                disabled={verifying || otp.length !== 6}
-                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={handleResendOTP}
+                                disabled={otpLoading}
+                                className="font-medium text-[#EF6A22] hover:opacity-80 disabled:opacity-50"
                             >
-                                {verifying ? (
-                                    <div className="flex items-center">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                        Verifying...
-                                    </div>
-                                ) : (
-                                    'Verify & Create Account'
-                                )}
+                                {otpLoading ? 'Sending…' : 'Resend OTP'}
                             </button>
-                        </div>
-
-                        <div className="text-center space-y-2">
-                            <p className="text-sm text-gray-600">
-                                Didn't receive the OTP?{' '}
-                                <button
-                                    type="button"
-                                    onClick={handleResendOTP}
-                                    disabled={otpLoading}
-                                    className="font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
-                                >
-                                    {otpLoading ? 'Sending...' : 'Resend OTP'}
-                                </button>
-                            </p>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setStep('form');
-                                    setOtp('');
-                                }}
-                                className="text-sm font-medium text-gray-600 hover:text-gray-500"
-                            >
-                                ← Back to form
-                            </button>
-                        </div>
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => { setStep('form'); setOtp(''); }}
+                            className="text-gray-400 hover:text-gray-600"
+                        >
+                            ← Back to form
+                        </button>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Signup Form Step
+    // ─── Signup Form Step ─────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Create your account
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Create your account to start shopping
-                    </p>
+        <div className="min-h-[70vh] grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10">
+            <div className="w-full max-w-md bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm">
+                <div className="px-7 pt-7 pb-2">
+                    <h1 className="text-2xl font-semibold text-gray-900">Create account</h1>
+                    <p className="text-sm text-gray-500">OTP will be sent to your mobile number</p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <label htmlFor="name" className="sr-only">
-                                Full Name
-                            </label>
-                            <input
-                                id="name"
-                                name="name"
-                                type="text"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Full Name"
-                                value={formData.name}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="emailID" className="sr-only">
-                                Email address
-                            </label>
-                            <input
-                                id="emailID"
-                                name="emailID"
-                                type="email"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
-                                value={formData.emailID}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="phoneNumber" className="sr-only">
-                                Phone Number
-                            </label>
-                            <input
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                type="tel"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Phone Number"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="gstin" className="sr-only">
-                                GSTIN 
-                            </label>
-                            <input
-                                id="gstin"
-                                name="gstin"
-                                type="text"
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="GSTIN"
-                                value={formData.gstin}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={handleChange}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="confirmPassword" className="sr-only">
-                                Confirm Password
-                            </label>
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Confirm Password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                            />
-                        </div>
+
+                <form className="px-7 pb-7 space-y-4" onSubmit={handleSubmit}>
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">Full Name</label>
+                        <input
+                            name="name" type="text" required
+                            placeholder="Your full name"
+                            value={formData.name} onChange={handleChange}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                        />
                     </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? (
-                                <div className="flex items-center">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    Sending OTP...
-                                </div>
-                            ) : (
-                                'Send OTP'
-                            )}
-                        </button>
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">Email Address</label>
+                        <input
+                            name="emailID" type="email" required
+                            placeholder="your@email.com"
+                            value={formData.emailID} onChange={handleChange}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                        />
                     </div>
 
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <button
-                                type="button"
-                                onClick={() => router.push('/login')}
-                                className="font-medium text-indigo-600 hover:text-indigo-500"
-                            >
-                                Sign in
-                            </button>
-                        </p>
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">Mobile Number</label>
+                        <div className="flex">
+                            <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
+                            <input
+                                name="phoneNumber" type="tel" required
+                                placeholder="10-digit mobile number"
+                                value={formData.phoneNumber} onChange={handleChange}
+                                maxLength={10}
+                                className="flex-1 rounded-r-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400">OTP will be sent to this number</p>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">GSTIN <span className="text-gray-400">(optional)</span></label>
+                        <input
+                            name="gstin" type="text"
+                            placeholder="GSTIN"
+                            value={formData.gstin} onChange={handleChange}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                        />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">Password</label>
+                        <input
+                            name="password" type="password" required
+                            placeholder="Min. 6 characters"
+                            value={formData.password} onChange={handleChange}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                        />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="block text-sm text-gray-600">Confirm Password</label>
+                        <input
+                            name="confirmPassword" type="password" required
+                            placeholder="Repeat your password"
+                            value={formData.confirmPassword} onChange={handleChange}
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full mt-1 py-2.5 rounded-lg text-white font-medium bg-[#EF6A22] hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                                Sending OTP…
+                            </span>
+                        ) : 'Send OTP'}
+                    </button>
+
+                    <p className="text-sm text-gray-500 text-center">
+                        Already have an account?{' '}
+                        <a href="/login" className="text-[#EF6A22] font-medium hover:opacity-80">Sign in</a>
+                    </p>
+
+                    <div className="text-xs text-gray-400 text-center">
+                        By continuing, you agree to our terms and privacy policy.
                     </div>
                 </form>
             </div>

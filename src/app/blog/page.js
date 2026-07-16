@@ -76,8 +76,8 @@ export default async function BlogLandingPage({ searchParams }) {
                     <Link
                         href="/blog"
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${!selectedCategory
-                                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         All Articles
@@ -87,8 +87,8 @@ export default async function BlogLandingPage({ searchParams }) {
                             key={cat.id}
                             href={`/blog?category=${cat.slug}${search ? `&search=${search}` : ''}`}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.slug
-                                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             {cat.name}
@@ -308,8 +308,8 @@ export default async function BlogLandingPage({ searchParams }) {
                                 key={pNum}
                                 href={`/blog?page=${pNum}${selectedCategory ? `&category=${selectedCategory}` : ''}${search ? `&search=${search}` : ''}`}
                                 className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${pNum === currentPage
-                                        ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
-                                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                                     }`}
                             >
                                 {pNum}

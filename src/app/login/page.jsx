@@ -8,25 +8,17 @@ import { syncLocalCartToBackend } from '@/utils/cartService'
 
 export default function LoginPage() {
     const router = useRouter()
+    const [loginType, setLoginType] = useState('phone') // 'phone' | 'email'
+    const [phoneNumber, setPhoneNumber] = useState('')
     const [emailID, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    // Clear error when user starts typing
-    // useEffect(() => {
-    //     if (error) {
-    //         setError('')
-    //     }
-    // }, [emailID, password])
-
-    // Debug: Log error state changes
+    // Clear error when user changes tab or input
     useEffect(() => {
-        console.log('Error state changed:', error)
-    }, [error])
-
-
-
+        setError('')
+    }, [loginType, phoneNumber, emailID, password])
 
     const handleLogin = async (e) => {
         e?.preventDefault?.()
@@ -35,9 +27,21 @@ export default function LoginPage() {
         if (loading) return
 
         // Basic validation
-        if (!emailID.trim()) {
-            setError('Please enter your email address')
-            return
+        if (loginType === 'phone') {
+            const digits = phoneNumber.replace(/\D/g, '')
+            if (!digits) {
+                setError('Please enter your phone number')
+                return
+            }
+            if (digits.length !== 10) {
+                setError('Phone number must be exactly 10 digits')
+                return
+            }
+        } else {
+            if (!emailID.trim()) {
+                setError('Please enter your email address')
+                return
+            }
         }
 
         if (!password.trim()) {
@@ -50,20 +54,26 @@ export default function LoginPage() {
 
         try {
             const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
-            console.log('Attempting login with:', { emailID: emailID.trim(), device: 'web' });
+            const payload = {
+                password,
+                device: 'web'
+            }
+
+            if (loginType === 'phone') {
+                payload.phoneNumber = phoneNumber.replace(/\D/g, '')
+            } else {
+                payload.emailID = emailID.trim()
+            }
+
+            console.log('Attempting login with:', payload);
 
             const response = await fetch(`${apiBase}/auth/login/user`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    emailID: emailID.trim(),
-                    password,
-                    device: 'web',
-                }),
+                body: JSON.stringify(payload),
             });
 
             console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -78,30 +88,24 @@ export default function LoginPage() {
             const refreshToken = data?.tokens?.refreshToken
             const uid = data?.user?.uid
 
-            console.log('Extracted tokens:', { accessToken: !!accessToken, refreshToken: !!refreshToken, uid });
-
             if (!accessToken || !refreshToken || !uid) {
-                console.log('Missing required fields:', { accessToken: !!accessToken, refreshToken: !!refreshToken, uid });
                 throw new Error('Invalid response from server')
             }
 
-            // Set authentication tokens and user ID as cookies
-            console.log('Setting auth tokens and redirecting...');
+            // Set cookies
             setAuthTokens(accessToken, refreshToken)
             setUserId(uid)
 
-            // Clear any existing errors and show success
             setError('')
             toast.success('Login successful! Redirecting...')
 
-            // Sync any local cart items to the backend before redirecting
+            // Sync guest cart
             try {
                 await syncLocalCartToBackend(uid);
             } catch (syncError) {
                 console.error('Failed to sync guest cart during login:', syncError);
             }
 
-            // Small delay to show success message
             setTimeout(() => {
                 router.push('/account')
             }, 500)
@@ -110,33 +114,20 @@ export default function LoginPage() {
             const errorMessage = err?.response?.data?.message || err?.message || 'Login failed'
             console.log('Login error:', errorMessage)
 
-            // Handle specific error cases
             if (errorMessage.includes('pending approval') || errorMessage.includes('pending admin approval')) {
-                const errorText = '⏳ Your account is pending approval. Please wait for admin approval before logging in.'
-                console.log('Setting error:', errorText)
-                setError(errorText)
-                console.log('Error state after setError:', errorText)
+                setError('⏳ Your account is pending approval. Please wait for admin approval before logging in.')
                 toast.error('Account pending approval. Please wait for admin approval.')
                 setPassword('')
             } else if (errorMessage.includes('rejected')) {
-                const errorText = '❌ Your account has been rejected. Please contact support for assistance.'
-                console.log('Setting error:', errorText)
-                setError(errorText)
-                console.log('Error state after setError:', errorText)
+                setError('❌ Your account has been rejected. Please contact support for assistance.')
                 toast.error('Account rejected. Please contact support.')
                 setPassword('')
-            } else if (errorMessage.includes('Invalid email or password')) {
-                const errorText = '❌ Invalid email or password. Please check your credentials and try again.'
-                console.log('Setting error:', errorText)
-                setError(errorText)
-                console.log('Error state after setError:', errorText)
-                toast.error('Invalid email or password')
+            } else if (errorMessage.includes('Invalid') || errorMessage.includes('password')) {
+                setError('❌ Invalid credentials. Please check details and try again.')
+                toast.error('Invalid phone/email or password')
                 setPassword('')
             } else {
-                const errorText = `❌ ${errorMessage}`
-                console.log('Setting error:', errorText)
-                setError(errorText)
-                console.log('Error state after setError:', errorText)
+                setError(`❌ ${errorMessage}`)
                 toast.error(errorMessage)
             }
         } finally {
@@ -152,89 +143,99 @@ export default function LoginPage() {
         }
     }
 
-    // Test function to check error display
-    // const testError = () => {
-    //     console.log('Test error button clicked')
-    //     setError('This is a test error message to check if error display works')
-    //     console.log('Error state set to:', 'This is a test error message to check if error display works')
-    // }
-
     return (
         <div className="min-h-[70vh] grid place-items-center bg-gradient-to-br from-orange-50 via-rose-50 to-amber-50 px-4 py-10">
             <div className="w-full max-w-md bg-white/90 backdrop-blur border border-orange-100 rounded-2xl shadow-sm">
                 {/* Header */}
                 <div className="px-7 pt-7 pb-2">
-                    <h1 className="text-2xl font-semibold text-gray-900">Welcome back</h1>
-                    <p className="text-sm text-gray-500">Sign in to continue</p>
+                    <h1 className="text-2xl font-semibold text-gray-900 font-sans">Welcome back</h1>
+                    <p className="text-sm text-gray-500">Sign in to continue to Cursive Letters</p>
                 </div>
 
-                {/* Login Container */}
-                <div className="px-7 pb-7 space-y-4">
-                    {/* Test Button - Remove after testing */}
+                {/* Tabbed Toggle Control */}
+                <div className="px-7 pt-2">
+                    <div className="flex bg-gray-100/80 p-1 rounded-xl border border-gray-200">
+                        <button
+                            type="button"
+                            onClick={() => setLoginType('phone')}
+                            className={`flex-1 text-center py-2 text-sm font-medium rounded-lg transition ${loginType === 'phone'
+                                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
+                                    : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                        >
+                            📱 Mobile Number
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setLoginType('email')}
+                            className={`flex-1 text-center py-2 text-sm font-medium rounded-lg transition ${loginType === 'email'
+                                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
+                                    : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                        >
+                            ✉️ Email Address
+                        </button>
+                    </div>
+                </div>
 
+                {/* Login Form Container */}
+                <div className="px-7 pb-7 pt-4 space-y-4">
                     {/* Error Message */}
                     {error && (
-                        <div className={`text-sm rounded-lg px-4 py-3 border ${error.includes('pending approval')
-                            ? 'text-amber-800 bg-amber-50 border-amber-300 shadow-md'
-                            : error.includes('rejected')
-                                ? 'text-red-800 bg-red-50 border-red-300 shadow-md'
-                                : 'text-red-800 bg-red-50 border-red-300 shadow-md'
-                            }`}>
+                        <div className="text-sm rounded-lg px-4 py-3 border text-red-800 bg-red-50 border-red-300 shadow-sm">
                             <div className="flex items-start gap-3">
                                 <div className="flex-shrink-0 mt-0.5">
-                                    {error.includes('pending approval') ? (
-                                        <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    )}
+                                    <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-semibold text-base">{error}</p>
-                                    {error.includes('pending approval') && (
-                                        <div className="mt-2 space-y-1">
-                                            <p className="text-xs text-amber-700">
-                                                You will receive an email notification once your account is approved.
-                                            </p>
-                                            <p className="text-xs text-amber-600 font-medium">
-                                                Please do not attempt to login until you receive approval confirmation.
-                                            </p>
-                                        </div>
-                                    )}
-                                    {error.includes('rejected') && (
-                                        <p className="text-xs text-red-700 mt-1">
-                                            If you believe this is an error, please contact our support team.
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Email Input */}
-                    <div className="space-y-1">
-                        <label className="block text-sm text-gray-600">Email Address</label>
-                        <input
-                            value={emailID}
-                            onChange={(e) => setEmail(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            placeholder='Enter your email address'
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
-                        />
-                    </div>
+                    {/* Conditional Input based on Active Tab */}
+                    {loginType === 'phone' ? (
+                        <div className="space-y-1">
+                            <label className="block text-sm text-gray-600">Mobile Number</label>
+                            <div className="flex">
+                                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm font-sans">+91</span>
+                                <input
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="10-digit mobile number"
+                                    className="flex-1 rounded-r-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none font-sans"
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            <label className="block text-sm text-gray-600">Email Address</label>
+                            <input
+                                type="email"
+                                value={emailID}
+                                onChange={(e) => setEmail(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Enter your email address"
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none font-sans"
+                            />
+                        </div>
+                    )}
 
                     {/* Password Input */}
                     <div className="space-y-1">
                         <label className="block text-sm text-gray-600">Password</label>
                         <input
+                            type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder='Enter your password'
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none"
+                            placeholder="Enter your password"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-[#EF6A22] focus:border-transparent outline-none font-sans"
                         />
                     </div>
 
@@ -246,11 +247,10 @@ export default function LoginPage() {
                             if (!loading) {
                                 handleLogin(e)
                             }
-                            return false
                         }}
-                        className={`w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 rounded-lg text-white font-medium transition ${loading
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-[#EF6A22] hover:opacity-90 cursor-pointer'
+                        className={`w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 rounded-lg text-white font-medium transition select-none ${loading
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-[#EF6A22] hover:opacity-90 cursor-pointer'
                             }`}
                     >
                         {loading ? 'Logging in…' : 'Login'}
