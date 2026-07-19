@@ -71,7 +71,7 @@ export default function AffiliateDashboard() {
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8">
             <h1 className="text-3xl font-bold">Affiliate Dashboard</h1>
-            
+
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white p-6 rounded shadow border-t-4 border-blue-500">
@@ -99,14 +99,14 @@ export default function AffiliateDashboard() {
                 <h2 className="text-xl font-bold mb-2">Your Primary Referral Link</h2>
                 <p className="text-gray-600 mb-4">Share this link to direct users to the home page with your referral code automatically applied.</p>
                 <div className="flex flex-col md:flex-row gap-2 items-center">
-                    <input 
-                        type="text" 
-                        readOnly 
-                        value={`http://localhost:3001/r/${me.referral_code}`}
+                    <input
+                        type="text"
+                        readOnly
+                        value={`https://cursiveletters.in/r/${me.referral_code}`}
                         className="flex-1 border p-2 rounded bg-gray-50 font-mono text-sm w-full"
                     />
-                    <button 
-                        onClick={() => navigator.clipboard.writeText(`http://localhost:3001/r/${me.referral_code}`)}
+                    <button
+                        onClick={() => navigator.clipboard.writeText(`https://cursiveletters.in/r/${me.referral_code}`)}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded whitespace-nowrap"
                     >
                         Copy Link
@@ -120,11 +120,11 @@ export default function AffiliateDashboard() {
                 <form onSubmit={handleCreateLink} className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="flex-1 w-full">
                         <label className="block text-sm font-semibold mb-1">Target URL (e.g. /product/some-item)</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={newLinkUrl}
                             onChange={(e) => setNewLinkUrl(e.target.value)}
-                            placeholder="https://yourstore.com/product/..." 
+                            placeholder="https://yourstore.com/product/..."
                             className="w-full border p-2 rounded"
                             required
                         />
@@ -143,13 +143,13 @@ export default function AffiliateDashboard() {
                             {links.map(link => (
                                 <li key={link.id} className="flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 p-3 rounded border">
                                     <div className="truncate flex-1 mb-2 md:mb-0 pr-4">
-                                        <span className="font-mono text-sm text-blue-600">http://localhost:3001/r/{link.slug}</span>
+                                        <span className="font-mono text-sm text-blue-600">https://cursiveletters.in/r/{link.slug}</span>
                                         <div className="text-xs text-gray-500 truncate" title={link.target_url}>Target: {link.target_url}</div>
                                     </div>
                                     <div className="flex gap-4 text-sm text-gray-600 whitespace-nowrap">
                                         <span>Clicks: {link.clicks}</span>
-                                        <button 
-                                            onClick={() => navigator.clipboard.writeText(`http://localhost:3001/r/${link.slug}`)}
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(`https://cursiveletters.in/r/${link.slug}`)}
                                             className="text-blue-500 hover:underline"
                                         >
                                             Copy
@@ -184,11 +184,10 @@ export default function AffiliateDashboard() {
                                     <td className="px-4 py-2">₹{c.order_amount}</td>
                                     <td className="px-4 py-2 font-bold text-green-600">₹{c.commission_amount}</td>
                                     <td className="px-4 py-2">
-                                        <span className={`px-2 py-1 rounded text-xs text-white ${
-                                            c.status === 'APPROVED' ? 'bg-green-500' :
-                                            c.status === 'PAID' ? 'bg-blue-500' :
-                                            c.status === 'VOIDED' ? 'bg-red-500' : 'bg-yellow-500'
-                                        }`}>
+                                        <span className={`px-2 py-1 rounded text-xs text-white ${c.status === 'APPROVED' ? 'bg-green-500' :
+                                                c.status === 'PAID' ? 'bg-blue-500' :
+                                                    c.status === 'VOIDED' ? 'bg-red-500' : 'bg-yellow-500'
+                                            }`}>
                                             {c.status}
                                         </span>
                                     </td>
