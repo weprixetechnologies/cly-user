@@ -160,8 +160,8 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => setLoginType('phone')}
                             className={`flex-1 text-center py-2 text-sm font-medium rounded-lg transition ${loginType === 'phone'
-                                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             📱 Mobile Number
@@ -170,8 +170,8 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => setLoginType('email')}
                             className={`flex-1 text-center py-2 text-sm font-medium rounded-lg transition ${loginType === 'email'
-                                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                ? 'bg-white text-gray-900 shadow-sm border border-gray-200/50'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             ✉️ Email Address
@@ -268,8 +268,8 @@ export default function LoginPage() {
                             }
                         }}
                         className={`w-full mt-2 inline-flex justify-center items-center px-4 py-2.5 rounded-lg text-white font-medium transition select-none ${loading
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-[#EF6A22] hover:opacity-90 cursor-pointer'
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-[#EF6A22] hover:opacity-90 cursor-pointer'
                             }`}
                     >
                         {loading ? 'Logging in…' : 'Login'}

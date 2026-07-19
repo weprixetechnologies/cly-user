@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import axios from '../../utils/axiosInstance';
 import { toast } from 'react-toastify';
 import { setAuthTokens, setUserId } from '../../utils/cookieUtil';
+import { syncLocalCartToBackend } from '../../utils/cartService';
 
 export default function Signup() {
     const router = useRouter();
@@ -102,7 +103,15 @@ export default function Signup() {
                 const { tokens, user } = registerResponse.data;
                 if (tokens?.accessToken && tokens?.refreshToken) {
                     setAuthTokens(tokens.accessToken, tokens.refreshToken);
-                    if (user?.uid) setUserId(user.uid);
+                    if (user?.uid) {
+                        setUserId(user.uid);
+                        // Sync guest cart to new account
+                        try {
+                            await syncLocalCartToBackend(user.uid);
+                        } catch (syncError) {
+                            console.error('Failed to sync guest cart during registration:', syncError);
+                        }
+                    }
                     toast.success('Account created! Welcome to Cursive Letters.');
                     router.push('/account');
                 } else {
