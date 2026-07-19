@@ -3,12 +3,15 @@ import React, { useState, useEffect } from 'react'
 import { HiLocationMarker, HiPlus, HiCheck, HiPencil, HiTrash } from "react-icons/hi";
 import { getUserAddresses, createAddress, setDefaultAddress, deleteAddress } from '@/utils/addressService';
 import { toast } from 'react-toastify';
+import { getCookie } from '@/utils/cookieUtil';
+import axiosInstance from '@/utils/axiosInstance';
 
 const AddressSelector = ({ onSelect, showAll = false }) => {
     const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [isCreating, setIsCreating] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [userInfo, setUserInfo] = useState(null);
     const [newAddress, setNewAddress] = useState({
         name: '',
         phone: '',
@@ -22,6 +25,16 @@ const AddressSelector = ({ onSelect, showAll = false }) => {
 
     useEffect(() => {
         loadAddresses();
+        const uid = getCookie('uid');
+        if (uid) {
+            axiosInstance.get(`/users/${uid}`)
+                .then(res => {
+                    if (res.data?.success && res.data?.user) {
+                        setUserInfo(res.data.user);
+                    }
+                })
+                .catch(err => console.error('Failed to load user info:', err));
+        }
     }, []);
 
     const loadAddresses = async () => {
@@ -72,6 +85,22 @@ const AddressSelector = ({ onSelect, showAll = false }) => {
             console.error('Error creating address:', error);
             toast.error('Failed to create address');
         }
+    };
+
+    const handleToggleCreating = () => {
+        if (!isCreating) {
+            setNewAddress({
+                name: userInfo?.name || '',
+                phone: userInfo?.phoneNumber || '',
+                addressLine1: '',
+                addressLine2: '',
+                city: '',
+                state: '',
+                pincode: '',
+                isDefault: false
+            });
+        }
+        setIsCreating(!isCreating);
     };
 
     const handleAddressSelect = (address) => {
@@ -129,7 +158,7 @@ const AddressSelector = ({ onSelect, showAll = false }) => {
                 </h3>
                 <button
                     className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded-md hover:bg-blue-50"
-                    onClick={() => setIsCreating(!isCreating)}
+                    onClick={handleToggleCreating}
                 >
                     <HiPlus size={16} />
                     {isCreating ? 'Cancel' : 'Add New Address'}

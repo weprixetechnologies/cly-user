@@ -1,11 +1,14 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { HiLocationMarker } from "react-icons/hi";
 import { HiCheck } from "react-icons/hi";
+import { getCookie } from '@/utils/cookieUtil';
+import axiosInstance from '@/utils/axiosInstance';
 
 const SelectAddress = ({ onSelect, showAll = false }) => {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [isManualEntry, setIsManualEntry] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
     const [manualAddress, setManualAddress] = useState({
         name: '',
         phone: '',
@@ -15,6 +18,19 @@ const SelectAddress = ({ onSelect, showAll = false }) => {
         state: '',
         pincode: ''
     });
+
+    useEffect(() => {
+        const uid = getCookie('uid');
+        if (uid) {
+            axiosInstance.get(`/users/${uid}`)
+                .then(res => {
+                    if (res.data?.success && res.data?.user) {
+                        setUserInfo(res.data.user);
+                    }
+                })
+                .catch(err => console.error('Failed to load user info:', err));
+        }
+    }, []);
 
     const handleManualAddressChange = (field, value) => {
         setManualAddress(prev => ({
@@ -45,6 +61,22 @@ const SelectAddress = ({ onSelect, showAll = false }) => {
         onSelect(address);
     };
 
+    const handleToggleManualEntry = (val) => {
+        const nextVal = typeof val === 'boolean' ? val : !isManualEntry;
+        if (nextVal) {
+            setManualAddress({
+                name: userInfo?.name || '',
+                phone: userInfo?.phoneNumber || '',
+                addressLine1: '',
+                addressLine2: '',
+                city: '',
+                state: '',
+                pincode: ''
+            });
+        }
+        setIsManualEntry(nextVal);
+    };
+
     return (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
@@ -54,7 +86,7 @@ const SelectAddress = ({ onSelect, showAll = false }) => {
                 </h3>
                 <button
                     className="text-sm text-blue-600 hover:text-blue-800"
-                    onClick={() => setIsManualEntry(!isManualEntry)}
+                    onClick={() => handleToggleManualEntry()}
                 >
                     {isManualEntry ? 'Cancel' : 'Enter Address'}
                 </button>
@@ -66,7 +98,7 @@ const SelectAddress = ({ onSelect, showAll = false }) => {
                     <p className="text-gray-500 mt-2">Enter your delivery address</p>
                     <button
                         className="mt-4 text-blue-600 hover:text-blue-800 text-sm"
-                        onClick={() => setIsManualEntry(true)}
+                        onClick={() => handleToggleManualEntry(true)}
                     >
                         Enter Address
                     </button>

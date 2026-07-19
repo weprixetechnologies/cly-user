@@ -4,12 +4,15 @@ import { HiLocationMarker, HiPlus, HiPencil, HiTrash, HiCheck } from 'react-icon
 import { getUserAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/utils/addressService';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
+import { getCookie } from '@/utils/cookieUtil';
+import axiosInstance from '@/utils/axiosInstance';
 
 const AddressesPage = () => {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -23,6 +26,16 @@ const AddressesPage = () => {
 
     useEffect(() => {
         loadAddresses();
+        const uid = getCookie('uid');
+        if (uid) {
+            axiosInstance.get(`/users/${uid}`)
+                .then(res => {
+                    if (res.data?.success && res.data?.user) {
+                        setUserInfo(res.data.user);
+                    }
+                })
+                .catch(err => console.error('Failed to load user info:', err));
+        }
     }, []);
 
     const loadAddresses = async () => {
@@ -113,6 +126,21 @@ const AddressesPage = () => {
         setShowForm(false);
     };
 
+    const handleAddAddressClick = () => {
+        setFormData({
+            name: userInfo?.name || '',
+            phone: userInfo?.phoneNumber || '',
+            addressLine1: '',
+            addressLine2: '',
+            city: '',
+            state: '',
+            pincode: '',
+            isDefault: false
+        });
+        setEditingAddress(null);
+        setShowForm(true);
+    };
+
     const handleEdit = (address) => {
         setEditingAddress(address);
         setFormData({
@@ -142,7 +170,7 @@ const AddressesPage = () => {
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">My Addresses</h1>
                 <button
-                    onClick={() => setShowForm(true)}
+                    onClick={handleAddAddressClick}
                     className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <HiPlus size={20} />
