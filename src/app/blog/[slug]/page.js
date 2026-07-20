@@ -17,6 +17,23 @@ async function fetchPostDetail(slug) {
     }
 }
 
+/**
+ * Pre-render all published blog slugs at build time.
+ * Googlebot will get static HTML instantly instead of waiting for SSR.
+ */
+export async function generateStaticParams() {
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+    try {
+        const res = await fetch(`${apiBase}/blog/sitemap-data`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data?.data || []).map(post => ({ slug: post.slug }));
+    } catch (err) {
+        console.error('[generateStaticParams] Failed to fetch blog slugs:', err);
+        return [];
+    }
+}
+
 // Generate dynamic SEO Metadata
 export async function generateMetadata({ params }) {
     const resolvedParams = await params;
@@ -56,7 +73,7 @@ export async function generateMetadata({ params }) {
             modifiedTime: post.updatedAt,
             authors: [post.authorName || 'Cursive Letters Expert']
         },
-        robots: post.meta_description?.includes('noindex') ? 'noindex, nofollow' : 'index, follow'
+        robots: post.is_noindex ? 'noindex, nofollow' : 'index, follow'
     };
 }
 

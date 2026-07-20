@@ -55,16 +55,19 @@ export default async function sitemap() {
     // 4. Fetch blog posts
     let blogRoutes = [];
     try {
-        const res = await fetch(`${apiBase}/blog/sitemap-data`);
+        const res = await fetch(`${apiBase}/blog/sitemap-data`, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
             const posts = data?.data || [];
-            blogRoutes = posts.map(post => ({
-                url: `${siteUrl}/blog/${post.slug}`,
-                lastModified: new Date(post.lastmod),
-                changeFrequency: 'weekly',
-                priority: 0.8
-            }));
+            blogRoutes = posts.map(post => {
+                const date = new Date(post.lastmod);
+                return {
+                    url: `${siteUrl}/blog/${post.slug}`,
+                    lastModified: isNaN(date.getTime()) ? new Date() : date,
+                    changeFrequency: 'weekly',
+                    priority: 0.9
+                };
+            });
         }
     } catch (err) {
         console.error('Error fetching blogs for sitemap:', err);
