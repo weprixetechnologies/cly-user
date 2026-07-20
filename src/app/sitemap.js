@@ -17,34 +17,38 @@ export default async function sitemap() {
     ];
 
     // 2. Fetch categories
+    // The categories table uses categoryID as the URL identifier (no slug column in DB)
     let categoryRoutes = [];
     try {
-        const res = await fetch(`${apiBase}/categories`);
+        const res = await fetch(`${apiBase}/categories`, { next: { revalidate: 3600 } });
         if (res.ok) {
             const data = await res.json();
             const categories = data?.categories || [];
-            categoryRoutes = categories.map(cat => ({
-                url: `${siteUrl}/categories/${cat.slug}`,
-                lastModified: new Date(),
-                changeFrequency: 'weekly',
-                priority: 0.8
-            }));
+            categoryRoutes = categories
+                .filter(cat => cat.categoryID) // skip any entry without a valid ID
+                .map(cat => ({
+                    url: `${siteUrl}/categories/${cat.categoryID}`,
+                    lastModified: new Date(),
+                    changeFrequency: 'weekly',
+                    priority: 0.8
+                }));
         }
     } catch (err) {
         console.error('Error fetching categories for sitemap:', err);
     }
 
-    // 3. Fetch products
+    // 3. Fetch ALL products
+    // limit=1000 covers 400+ products; response shape is { data: { products: [], pagination: {} } }
     let productRoutes = [];
     try {
-        const res = await fetch(`${apiBase}/products/list?limit=100&status=active`);
+        const res = await fetch(`${apiBase}/products/list?limit=1000&status=active`, { next: { revalidate: 3600 } });
         if (res.ok) {
             const data = await res.json();
             const products = data?.data?.products || [];
             productRoutes = products.map(prod => ({
                 url: `${siteUrl}/products/${prod.productID}`,
                 lastModified: prod.updatedAt ? new Date(prod.updatedAt) : new Date(),
-                changeFrequency: 'daily',
+                changeFrequency: 'weekly',
                 priority: 0.7
             }));
         }
@@ -52,7 +56,7 @@ export default async function sitemap() {
         console.error('Error fetching products for sitemap:', err);
     }
 
-    // 4. Fetch blog posts
+    // 4. Fetch blog posts (published only — returns { data: [{ slug, lastmod }] })
     let blogRoutes = [];
     try {
         const res = await fetch(`${apiBase}/blog/sitemap-data`, { next: { revalidate: 3600 } });
@@ -60,6 +64,7 @@ export default async function sitemap() {
             const data = await res.json();
             const posts = data?.data || [];
             blogRoutes = posts.map(post => {
+                // Safe date parsing — DB updatedAt can be null
                 const date = new Date(post.lastmod);
                 return {
                     url: `${siteUrl}/blog/${post.slug}`,
