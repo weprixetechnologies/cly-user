@@ -55,7 +55,7 @@ export default async function sitemap() {
     // 4. Fetch blog posts
     let blogRoutes = [];
     try {
-        const res = await fetch(`${apiBase}/blog/sitemap-data`, { cache: 'no-store' });
+        const res = await fetch(`${apiBase}/blog/sitemap-data`, { next: { revalidate: 3600 } });
         if (res.ok) {
             const data = await res.json();
             const posts = data?.data || [];
