@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import axiosInstance from '@/utils/axiosInstance';
 import Link from 'next/link';
+import ReviewExperienceModal from '@/components/site-reviews/ReviewExperienceModal';
 
 export default function OrderSummary({ params }) {
     const { orderID } = use(params);
@@ -10,6 +11,7 @@ export default function OrderSummary({ params }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     useEffect(() => {
         async function load() {
@@ -24,6 +26,15 @@ export default function OrderSummary({ params }) {
                 const rows = orderRes?.data?.data || [];
                 const payments = paymentRes?.data?.data || [];
                 setData({ items: rows, info: rows[0] || null, payments });
+
+                // Prompt for an experience review once per order (skip on refresh/revisit).
+                try {
+                    const key = `review_prompted_${orderID}`;
+                    if (rows.length > 0 && !sessionStorage.getItem(key)) {
+                        sessionStorage.setItem(key, '1');
+                        setTimeout(() => setShowReviewModal(true), 1200);
+                    }
+                } catch (_) { /* sessionStorage unavailable — skip */ }
             } catch (e) {
                 setError(e?.response?.data?.message || e?.message || 'Failed to fetch order');
             } finally { setLoading(false); }
@@ -649,6 +660,13 @@ export default function OrderSummary({ params }) {
 
                         {/* Back actions */}
                         <div className="space-y-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowReviewModal(true)}
+                                className="w-full flex items-center justify-center px-5 py-3 bg-white border border-[#EF6A22] text-[#EF6A22] rounded-xl text-sm font-bold hover:bg-orange-50 transition"
+                            >
+                                ★ Review Your Experience
+                            </button>
                             <Link href="/account" className="w-full flex items-center justify-center px-5 py-3 bg-[#EF6A22] text-white rounded-xl text-sm font-bold hover:bg-[#d85d1c] transition shadow-sm">
                                 My Orders
                             </Link>
@@ -659,6 +677,8 @@ export default function OrderSummary({ params }) {
                 </div>
 
             </div>
+
+            <ReviewExperienceModal open={showReviewModal} onClose={() => setShowReviewModal(false)} />
         </div>
     );
 }

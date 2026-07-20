@@ -6,6 +6,7 @@ import aboutbanner from '../../public/ibs.jpg'
 import ProductGridHome from "@/components/products/productGridHome";
 import VisitorTracker from "@/components/visitor-tracker";
 import FeaturedProducts from "@/components/products/FeaturedProducts";
+import SiteReviewsSection from "@/components/site-reviews/SiteReviewsSection";
 
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
@@ -174,6 +175,9 @@ export default async function Home() {
           </div>
         </section>
       )}
+      {/* Website / experience reviews */}
+      <SiteReviewsSection />
+
       <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
     </div>
   );
