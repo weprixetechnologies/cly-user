@@ -9,7 +9,7 @@ import FeaturedProducts from "@/components/products/FeaturedProducts";
 import SiteReviewsSection from "@/components/site-reviews/SiteReviewsSection";
 
 
-export const revalidate = 60; // ISR: revalidate every 60 seconds
+export const revalidate = 3600; // ISR: revalidate every 60 seconds
 
 async function fetchSliders() {
   const baseUrl = 'https://api.cursiveletters.in/api';

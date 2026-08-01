@@ -214,7 +214,7 @@ export default function OrderSummary({ params }) {
                 {/* ── 1. Header Card (Banner Layout matching design) ── */}
                 <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 mb-6 shadow-sm">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                        
+
                         {/* Left Side: Circular Success/Status Indicator and Message */}
                         <div className="flex items-start md:items-center gap-5">
                             {/* Conic Ring Wrapper around dot */}
@@ -237,7 +237,7 @@ export default function OrderSummary({ params }) {
                                     <span className="absolute top-4 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
                                 </div>
                             </div>
-                            
+
                             <div className="space-y-1">
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <h1 className="text-xl md:text-2xl font-bold text-slate-900">
@@ -259,7 +259,7 @@ export default function OrderSummary({ params }) {
 
                         {/* Right Side: Order Number metadata and quick info (mockup match) */}
                         <div className="lg:border-l border-slate-200 lg:pl-8 py-2 min-w-full lg:min-w-[400px]">
-                            
+
                             {/* Order Number Box */}
                             <div className="space-y-1 mb-5">
                                 <div className="text-xs font-semibold text-slate-400">Order Number</div>
@@ -280,7 +280,7 @@ export default function OrderSummary({ params }) {
 
                             {/* Sub-grid of Placed On, Estimated Delivery, and Order Status */}
                             <div className="grid grid-cols-3 divide-x divide-slate-200 gap-2 items-center">
-                                
+
                                 {/* Placed On */}
                                 <div className="flex items-center gap-3 pr-2">
                                     <div className="w-10 h-10 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
@@ -321,20 +321,18 @@ export default function OrderSummary({ params }) {
                                 {/* Order Status */}
                                 <div className="pl-4">
                                     <div className="flex items-center gap-1.5 mb-1.5">
-                                        <span className={`w-2 h-2 rounded-full ${
-                                            status === 'accepted' ? 'bg-emerald-500' :
-                                            status === 'rejected' ? 'bg-red-500' :
-                                            'bg-amber-500'
-                                        }`}></span>
+                                        <span className={`w-2 h-2 rounded-full ${status === 'accepted' ? 'bg-emerald-500' :
+                                                status === 'rejected' ? 'bg-red-500' :
+                                                    'bg-amber-500'
+                                            }`}></span>
                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Order Status</span>
                                     </div>
-                                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${
-                                        status === 'accepted'
+                                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${status === 'accepted'
                                             ? (remaining > 0 ? 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' : 'bg-[#D1FAE5] text-[#065F46] border border-[#10B981]')
                                             : status === 'rejected'
                                                 ? 'bg-[#FEE2E2] text-[#991B1B] border border-[#FCA5A5]'
                                                 : 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]'
-                                    }`}>
+                                        }`}>
                                         {status === 'accepted'
                                             ? (remaining > 0 ? 'Pending Payment' : 'Paid & Confirmed')
                                             : status === 'rejected'
@@ -352,22 +350,22 @@ export default function OrderSummary({ params }) {
 
                 {/* ── 2. Two-Column Main Content Section ── */}
                 <div className="grid lg:grid-cols-3 gap-6 items-start">
-                    
+
                     {/* Left & Center: Combined Items & Progress Panel */}
                     <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                         <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-150">
-                            
+
                             {/* Left Column: Order Progress timeline sidebar */}
                             <div className="p-6 md:col-span-1 bg-slate-50/50">
                                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Order Progress</h3>
-                                
+
                                 <div className="relative flex flex-col gap-6 pl-2">
                                     {/* Connecting Line */}
                                     <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200"></div>
-                                    
+
                                     {steps.map((step, idx) => {
                                         const isLast = idx === steps.length - 1;
-                                        
+
                                         const dotColors = {
                                             completed: 'bg-emerald-500 ring-4 ring-emerald-50',
                                             active: 'bg-[#EF6A22] ring-4 ring-orange-100',
@@ -380,7 +378,7 @@ export default function OrderSummary({ params }) {
                                             rejected: 'text-red-600 font-semibold',
                                             upcoming: 'text-slate-400',
                                         };
-                                        
+
                                         return (
                                             <div key={idx} className="flex gap-4 items-start relative z-10">
                                                 {/* Step Circle */}
@@ -398,7 +396,7 @@ export default function OrderSummary({ params }) {
                                                         <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
                                                     )}
                                                 </div>
-                                                
+
                                                 {/* Text Info */}
                                                 <div className="space-y-0.5">
                                                     <div className={`text-xs ${textColors[step.status]}`}>{step.label}</div>
@@ -411,16 +409,16 @@ export default function OrderSummary({ params }) {
                                     })}
                                 </div>
                             </div>
-                            
+
                             {/* Right Area: Items list and Footer Support */}
                             <div className="md:col-span-3 flex flex-col justify-between min-h-[400px]">
-                                
+
                                 {/* Items Header and List */}
                                 <div>
                                     <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
                                         <h2 className="font-bold text-slate-800 text-sm">Order Items ({data.items.length})</h2>
                                     </div>
-                                    
+
                                     <div className="divide-y divide-slate-100">
                                         {data.items.map((it, idx) => {
                                             const unitPrice = Number(it.final_price ?? it.pItemPrice ?? it.productPrice ?? 0);
@@ -441,13 +439,13 @@ export default function OrderSummary({ params }) {
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-slate-900 text-sm leading-snug mb-1">{it.productName}</h3>
                                                         <div className="text-xs text-slate-400 mb-2">SKU: {it.sku || '—'}</div>
-                                                        
+
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             {/* Show requested units always */}
                                                             <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full font-semibold">
                                                                 Requested: {requestedQty}
                                                             </span>
-                                                            
+
                                                             {/* Show accepted units if order is accepted or partial */}
                                                             {status === 'accepted' && (
                                                                 <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
@@ -482,7 +480,7 @@ export default function OrderSummary({ params }) {
 
                     {/* Right: Sidebar segment (Summary, Payment, Address) */}
                     <div className="space-y-6">
-                        
+
                         {/* Order Summary Card */}
                         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                             <div className="px-6 py-4 border-b border-slate-150 flex items-center gap-2">
@@ -532,14 +530,14 @@ export default function OrderSummary({ params }) {
                             </h3>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-xs text-slate-500">
-                                    {info.paymentMode === 'COD' ? 'COD' : 'ONL'}
+                                    {info.paymentMode === 'COD' ? 'ADV' : 'ONL'}
                                 </div>
                                 <div>
                                     <div className="font-bold text-slate-800 text-sm">
-                                        {info.paymentMode === 'COD' ? 'Cash on Delivery' : 'Online Payment'}
+                                        {info.paymentMode === 'COD' ? 'Full Advance' : 'Online Payment'}
                                     </div>
                                     <div className="text-xs text-slate-400 font-medium">
-                                        {info.paymentMode === 'COD' ? 'Pay when package arrives' : 'Paid online'}
+                                        {info.paymentMode === 'COD' ? 'Pay during order approval' : 'Paid online'}
                                     </div>
                                 </div>
                             </div>
