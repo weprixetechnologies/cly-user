@@ -22,11 +22,16 @@ const mapApiProductToCard = (p) => ({
 
 const ProductGridHome = ({ products = [], visitShop = true }) => {
     const mappedProducts = (products || []).map(mapApiProductToCard)
+    const sortedProducts = [...mappedProducts].sort((a, b) => {
+        const aStock = (a.inventory || 0) > 0 ? 1 : 0;
+        const bStock = (b.inventory || 0) > 0 ? 1 : 0;
+        return bStock - aStock;
+    })
 
     return (
         <div>
             <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6'>
-                {mappedProducts.map((product) => (
+                {sortedProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                 ))}
             </div>

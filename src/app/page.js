@@ -7,6 +7,7 @@ import ProductGridHome from "@/components/products/productGridHome";
 import VisitorTracker from "@/components/visitor-tracker";
 import FeaturedProducts from "@/components/products/FeaturedProducts";
 import SiteReviewsSection from "@/components/site-reviews/SiteReviewsSection";
+import TrustedBySection from "@/components/trusted-by/TrustedBySection";
 
 
 export const revalidate = 3600; // ISR: revalidate every 60 seconds
@@ -98,13 +99,26 @@ async function fetchHomepageVideos(limit = 12) {
   }
 }
 
+async function fetchTrustedLogos() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
+  try {
+    const res = await fetch(`${baseUrl}/trusted-logos`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json?.data || [];
+  } catch (_) {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [sliderData, categories, products, featuredProducts, homepageVideos] = await Promise.all([
+  const [sliderData, categories, products, featuredProducts, homepageVideos, trustedLogos] = await Promise.all([
     fetchSliders(),
     fetchCategories(),
-    fetchProducts(50, 100, false),
+    fetchProducts(50, 100, true),
     fetchFeaturedProducts(20),
     fetchHomepageVideos(12),
+    fetchTrustedLogos(),
   ]);
   const { desktop, mobile } = sliderData;
 
@@ -112,8 +126,6 @@ export default async function Home() {
     <div>
       <VisitorTracker />
       <Slider desktopImages={desktop.map(d => d.imgUrl)} mobileImages={mobile.map(m => m.imgUrl)} />
-
-
 
       <Headings subHeading="Shop by Categories" heading="What You Need" />
       <CategoriesCom categories={categories} />
@@ -129,12 +141,6 @@ export default async function Home() {
         </>
       )}
 
-      {/* <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" /> */}
-      {/* <div className="h-7"></div> */}
-      {/* <div className="md:px-15 px-4">
-        <ProductGrid initialLimit={8} maxTotal={8} />
-      </div>
-      <div className="h-7"></div> */}
       <Headings subHeading="Picks Curating With Your Needs" heading="Arrivals That Attract" />
       <div className="h-7"></div>
       <div className="md:px-15 px-4">
@@ -177,6 +183,9 @@ export default async function Home() {
       )}
       {/* Website / experience reviews */}
       <SiteReviewsSection />
+
+      {/* Trusted By Carousel Section */}
+      <TrustedBySection logos={trustedLogos} />
 
       <Image src={aboutbanner} alt="aboutbanner" width={0} height={0} sizes="100vw" style={{ width: '100%', height: 'auto' }} />
     </div>

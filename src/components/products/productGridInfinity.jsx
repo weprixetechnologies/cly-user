@@ -55,7 +55,12 @@ const ProductGridInfinity = ({ initialLimit = 20, search = '', categoryID = '', 
             // Calculate the final list - we need to get current products first
             setProducts(prevProducts => {
                 const combined = page === 1 ? items : [...prevProducts, ...items]
-                const finalList = typeof maxTotal === 'number' ? combined.slice(0, maxTotal) : combined
+                const sortedCombined = [...combined].sort((a, b) => {
+                    const aStock = (a.inventory || 0) > 0 ? 1 : 0;
+                    const bStock = (b.inventory || 0) > 0 ? 1 : 0;
+                    return bStock - aStock;
+                })
+                const finalList = typeof maxTotal === 'number' ? sortedCombined.slice(0, maxTotal) : sortedCombined
 
                 // Determine if there are more items to load based on finalList
                 let nextHasMore = true

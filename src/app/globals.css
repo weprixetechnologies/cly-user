@@ -374,3 +374,12 @@
     animation: gradient-border 2s linear infinite;
     border-radius: 2px;
 }
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+}

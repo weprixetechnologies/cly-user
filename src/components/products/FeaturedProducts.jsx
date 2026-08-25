@@ -27,7 +27,11 @@ const FeaturedProducts = ({ products = [] }) => {
     const [isHovered, setIsHovered] = useState(false)
     const autoSlideRef = useRef(null)
 
-    const mappedProducts = (products || []).map(mapApiProductToCard)
+    const mappedProducts = (products || []).map(mapApiProductToCard).sort((a, b) => {
+        const aStock = (a.inventory || 0) > 0 ? 1 : 0;
+        const bStock = (b.inventory || 0) > 0 ? 1 : 0;
+        return bStock - aStock;
+    })
 
     if (mappedProducts.length === 0) {
         return null
