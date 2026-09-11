@@ -222,16 +222,15 @@ export default async function BlogPostDetailPage({ params }) {
             {/* Cover Image */}
             {post.cover_image_url && (
                 <div className="max-w-6xl mx-auto px-4 mb-12">
-                    <div className="relative h-[300px] md:h-[500px] rounded-3xl overflow-hidden shadow-md">
-                        <Image
-                            src={post.cover_image_url}
-                            alt={post.cover_image_alt || post.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-w-1200px) 100vw, 1200px"
-                            priority
-                        />
-                    </div>
+                    <Image
+                        src={post.cover_image_url}
+                        alt={post.cover_image_alt || post.title}
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        className="w-full h-auto rounded-3xl shadow-md object-contain"
+                        priority
+                    />
                 </div>
             )}
 
