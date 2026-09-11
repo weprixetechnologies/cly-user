@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -5,17 +6,17 @@ import ViewCounter from './ViewCounter';
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
-async function fetchPostDetail(slug) {
+const fetchPostDetail = cache(async (slug) => {
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
-        const res = await fetch(`${apiBase}/blog/posts/${slug}`, { next: { revalidate: 60 } });
+        const res = await fetch(`${apiBase}/blog/posts/${slug}`, { cache: 'no-store' });
         if (!res.ok) return null;
         return await res.json();
     } catch (err) {
         console.error('Error fetching blog post detail:', err);
         return null;
     }
-}
+});
 
 /**
  * Pre-render all published blog slugs at build time.
@@ -103,6 +104,7 @@ export default async function BlogPostDetailPage({ params }) {
     const { tags, products, relatedPosts } = post;
     const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://cursiveletters.in';
 
+    /*
     // Parse H2 headings for Table of Contents
     const toc = [];
     const h2Regex = /<h2[^>]*>(.*?)<\/h2>/g;
@@ -120,6 +122,8 @@ export default async function BlogPostDetailPage({ params }) {
         toc.push({ id, text: cleanText });
         return `<h2${attributes} id="${id}">${text}</h2>`;
     });
+    */
+    const processedContent = post.content;
 
     // Create JSON-LD Schema
     const jsonLd = {
@@ -233,7 +237,7 @@ export default async function BlogPostDetailPage({ params }) {
 
             {/* Article Grid Container */}
             <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12 mt-8">
-                {/* Left Panel: Table of Contents */}
+                {/* Left Panel: Table of Contents (Currently Disabled)
                 <aside className="lg:col-span-3 hidden lg:block">
                     <div className="sticky top-6 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                         <h4 className="font-serif font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 text-lg">
@@ -257,9 +261,10 @@ export default async function BlogPostDetailPage({ params }) {
                         )}
                     </div>
                 </aside>
+                */}
 
                 {/* Center Panel: Content Body */}
-                <main className="lg:col-span-6 bg-white border border-gray-100 rounded-3xl p-6 md:p-10 shadow-sm">
+                <main className={`${products && products.length > 0 ? 'lg:col-span-9' : 'lg:col-span-12'} bg-white border border-gray-100 rounded-3xl p-6 md:p-10 shadow-sm`}>
                     {/* HTML Content Body with Tailwind Typography styles */}
                     <div
                         className="prose prose-amber max-w-none prose-headings:font-serif prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-amber-600 prose-a:underline hover:prose-a:text-amber-700 prose-img:rounded-2xl prose-img:shadow-sm"
