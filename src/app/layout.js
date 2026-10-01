@@ -7,6 +7,7 @@ import ReduxProvider from "@/components/providers/ReduxProvider";
 import DisableContextMenu from "@/components/providers/DisableContextMenu";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Script from 'next/script';
 
 const ledger = Ledger({
   variable: "--font-ledger",
@@ -23,11 +24,32 @@ const montserrat = Montserrat({
 export const metadata = {
   title: "Cursive Letters Ly",
   description: "Welcome to CLY, India's largest stationary point for imported items. We are your one-stop destination for quality stationary products, offering a wide range of imported goods that meet the highest standards of quality and reliability.",
+  verification: {
+    google: "gn2DNHluONpfF8NTB9Lu1gfLJEbNyAbrS2JobvvK6FI",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-VF1JL9BLNC"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-VF1JL9BLNC');
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${ledger.variable} ${montserrat.variable} antialiased`}
       >
