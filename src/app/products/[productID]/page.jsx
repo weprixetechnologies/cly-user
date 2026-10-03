@@ -264,7 +264,7 @@ export default function ProductDetail({ params }) {
     const shareProduct = async () => {
         try {
             const url = typeof window !== 'undefined' ? window.location.href : '';
-            const title = product?.productName || 'Check this product';
+            const title = (product?.seoName || product?.productName) || 'Check this product';
             const text = `Take a look at ${title}`;
             if (navigator.share) {
                 await navigator.share({ title, text, url });
@@ -369,7 +369,7 @@ export default function ProductDetail({ params }) {
         try {
             await addToCartService({
                 productID: product.productID,
-                productName: product.productName,
+                productName: (product.seoName || product.productName),
                 featuredImage: product.featuredImages,
                 boxQty: product.boxQty || 0,
                 units: quantity,
@@ -439,7 +439,7 @@ export default function ProductDetail({ params }) {
                                 </a>
                             </li>
                             <li><span className="mx-2 text-gray-400">›</span></li>
-                            <li className="text-gray-900 font-semibold truncate max-w-[200px] sm:max-w-none">{product.productName}</li>
+                            <li className="text-gray-900 font-semibold truncate max-w-[200px] sm:max-w-none">{(product.seoName || product.productName)}</li>
                         </ol>
                     </nav>
 
@@ -488,7 +488,7 @@ export default function ProductDetail({ params }) {
                                         <video src={selectedImage} controls className="w-full h-auto" />
                                     ) : (
                                         // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={selectedImage} alt={product.productName} className="w-full h-auto" />
+                                        <img src={selectedImage} alt={(product.seoName || product.productName)} className="w-full h-auto" />
                                     )
                                 ) : (
                                     <div className='flex items-center justify-center h-full text-gray-500'>No image</div>
@@ -524,7 +524,7 @@ export default function ProductDetail({ params }) {
                         <div className="flex flex-col pt-2 lg:pt-0">
                             <p className='text-sm font-semibold text-[#004aad] mb-1'>Cursive Letters</p>
                             <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-3 tracking-tight'>
-                                {product.productName}
+                                {(product.seoName || product.productName)}
                             </h1>
 
                             {/* Ratings & Sales (Dynamic) */}
@@ -956,7 +956,7 @@ export default function ProductDetail({ params }) {
                                 </button>
 
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Write a Review</h3>
-                                <p className="text-xs text-gray-500 mb-6 font-medium">Share your rating and thoughts about: <span className="font-bold text-gray-800">{product.productName}</span></p>
+                                <p className="text-xs text-gray-500 mb-6 font-medium">Share your rating and thoughts about: <span className="font-bold text-gray-800">{(product.seoName || product.productName)}</span></p>
 
                                 <form onSubmit={handleSubmitReview} className="space-y-5">
                                     {/* Stars Selector */}

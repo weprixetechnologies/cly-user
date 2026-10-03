@@ -6,8 +6,8 @@ import ProductCard from './productCard'
 const PLACEHOLDER_IMG = 'https://picsum.photos/270/280'
 
 const mapApiProductToCard = (p) => ({
-    id: p.productID,
-    name: p.productName,
+    id: p.slug || p.productID,
+    name: p.seoName || p.productName,
     image: p.featuredImages || PLACEHOLDER_IMG,
     category: p.categoryName || 'Category',
     categoryID: p.categoryID,
