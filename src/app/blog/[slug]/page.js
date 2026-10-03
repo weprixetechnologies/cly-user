@@ -309,7 +309,7 @@ export default async function BlogPostDetailPage({ params }) {
                                                 />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <Link href={`/products/${prod.id}`}>
+                                                <Link href={`/products/${prod.slug || prod.id}`}>
                                                     <h5 className="font-semibold text-gray-900 text-sm truncate hover:text-amber-600 transition-colors">
                                                         {prod.name}
                                                     </h5>

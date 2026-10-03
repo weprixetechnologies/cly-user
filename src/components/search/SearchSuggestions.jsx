@@ -80,7 +80,8 @@ const SearchSuggestions = ({ searchQuery, onSelect, isVisible, onClose }) => {
     }
 
     const handleSuggestionClick = (product) => {
-        router.push(`/products/${product.productID}`)
+        const routeId = product.slug || product.productID;
+        router.push(`/products/${routeId}`)
         onClose()
     }
 

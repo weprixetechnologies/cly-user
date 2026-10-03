@@ -46,7 +46,7 @@ export default async function sitemap() {
             const data = await res.json();
             const products = data?.data?.products || [];
             productRoutes = products.map(prod => ({
-                url: `${siteUrl}/products/${prod.productID}`,
+                url: `${siteUrl}/products/${prod.slug || prod.productID}`,
                 lastModified: prod.updatedAt ? new Date(prod.updatedAt) : new Date(),
                 changeFrequency: 'weekly',
                 priority: 0.7

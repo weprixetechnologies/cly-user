@@ -522,9 +522,9 @@ export default function ProductDetail({ params }) {
 
                         {/* Right: product info and CTA */}
                         <div className="flex flex-col pt-2 lg:pt-0">
-                            <p className='text-sm font-semibold text-[#004aad] mb-1'>Cursive Letters</p>
+                            <p className='text-sm font-semibold text-[#004aad] mb-1'>{product.seoName || 'Cursive Letters'}</p>
                             <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-3 tracking-tight'>
-                                {(product.seoName || product.productName)}
+                                {product.productName}
                             </h1>
 
                             {/* Ratings & Sales (Dynamic) */}
