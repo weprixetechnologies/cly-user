@@ -268,8 +268,10 @@ function CategoryProductsContent({ params }) {
                                 <ProductCard 
                                     key={product.productID || index} 
                                     product={{
-                                        id: product.productID,
-                                        name: product.productName,
+                                        id: product.slug || product.productID,
+                                        productID: product.productID,
+                                        slug: product.slug,
+                                        name: product.seoName || product.productName,
                                         image: product.featuredImages || 'https://picsum.photos/270/280',
                                         category: product.categoryName || 'Category',
                                         categoryID: product.categoryID,
@@ -277,6 +279,8 @@ function CategoryProductsContent({ params }) {
                                         price: product.productPrice || 0,
                                         sku: product.sku,
                                         inventory: product.inventory || 0,
+                                        avgRating: product.avgRating || 0,
+                                        reviewCount: product.reviewCount || 0,
                                     }} 
                                 />
                             ))}

@@ -8,6 +8,8 @@ const PLACEHOLDER_IMG = 'https://picsum.photos/270/280'
 
 const mapApiProductToCard = (p) => ({
     id: p.slug || p.productID,
+    productID: p.productID,
+    slug: p.slug,
     name: p.seoName || p.productName,
     image: p.featuredImages || PLACEHOLDER_IMG,
     category: p.categoryName || 'Category',

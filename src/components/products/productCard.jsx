@@ -41,6 +41,8 @@ const ProductCard = ({ product }) => {
     // Use minQty as the default quantity
     const quantity = product.minQty || 1;
 
+    const targetSlugOrId = product.slug || product.id;
+
     const handleAdd = async () => {
         // Check if product is in stock
         if ((product.inventory || 0) <= 0) {
@@ -51,7 +53,7 @@ const ProductCard = ({ product }) => {
         try {
             setButtonState('adding')
             await addToCartApi({
-                productID: product.id,
+                productID: product.productID || product.id,
                 productName: product.name,
                 featuredImage: product.image,
                 boxQty: 0,
@@ -99,7 +101,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <div className='w-full bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden'>
-            <div className='relative w-full cursor-pointer bg-[#f9f9f9]' style={{ aspectRatio: '1 / 1' }} onClick={() => router.push(`/products/${product.id}`)}>
+            <div className='relative w-full cursor-pointer bg-[#f9f9f9]' style={{ aspectRatio: '1 / 1' }} onClick={() => router.push(`/products/${targetSlugOrId}`)}>
                 <Image
                     src={product.image}
                     alt={product.name}
@@ -122,7 +124,7 @@ const ProductCard = ({ product }) => {
             
             <div className='flex-1 flex flex-col p-3'>
                 {/* Title and SKU */}
-                <h3 className='text-sm font-semibold text-gray-900 line-clamp-2 leading-tight mb-1 cursor-pointer hover:text-[#004aad] transition-colors' onClick={() => router.push(`/products/${product.id}`)}>
+                <h3 className='text-sm font-semibold text-gray-900 line-clamp-2 leading-tight mb-1 cursor-pointer hover:text-[#004aad] transition-colors' onClick={() => router.push(`/products/${targetSlugOrId}`)}>
                     {product.name}
                 </h3>
                 <div className='text-[11px] text-gray-400 mb-1'>
