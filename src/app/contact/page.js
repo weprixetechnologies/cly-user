@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '@/utils/axiosInstance';
 import { ClipLoader } from 'react-spinners';
+import LeadCaptureForm from '@/components/leads/LeadCaptureForm';
 
 const ContactPage = () => {
     const [contacts, setContacts] = useState([]);
@@ -173,11 +174,21 @@ const ContactPage = () => {
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
             <div className="max-w-6xl mx-auto px-4 py-12">
                 {/* Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-12">
                     <h1 className="text-5xl font-bold text-gray-900 mb-4">Get in Touch</h1>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                         We'd love to hear from you. Send us a message and we'll respond as soon as possible.
                     </p>
+                </div>
+
+                {/* Lead Capture Form Section */}
+                <div className="max-w-2xl mx-auto mb-16">
+                    <LeadCaptureForm
+                        source="contact_page"
+                        variant="card"
+                        title="Send Us a Message"
+                        subtitle="Have a question, bulk order requirement, or custom stationery inquiry? Fill out the details below and we will contact you promptly."
+                    />
                 </div>
 
                 {/* Headquarter Section */}

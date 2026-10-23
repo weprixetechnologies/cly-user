@@ -5,6 +5,7 @@ import Footer from "@/components/footer/Footer";
 import Preloader from "@/components/ui/preloader";
 import ReduxProvider from "@/components/providers/ReduxProvider";
 import DisableContextMenu from "@/components/providers/DisableContextMenu";
+import FloatingWidgets from "@/components/widgets/FloatingWidgets";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Script from 'next/script';
@@ -61,6 +62,7 @@ export default function RootLayout({ children }) {
             {children}
           </main>
           <Footer />
+          <FloatingWidgets />
           <ToastContainer
             position="top-right"
             autoClose={3000}
