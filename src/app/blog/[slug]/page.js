@@ -9,7 +9,7 @@ export const revalidate = 60; // ISR: revalidate every 60 seconds
 const fetchPostDetail = cache(async (slug) => {
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
-        const res = await fetch(`${apiBase}/blog/posts/${slug}`, { cache: 'no-store' });
+        const res = await fetch(`${apiBase}/blog/posts/${slug}`, { next: { revalidate: 60 } });
         if (!res.ok) return null;
         return await res.json();
     } catch (err) {
@@ -25,7 +25,7 @@ const fetchPostDetail = cache(async (slug) => {
 export async function generateStaticParams() {
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.cursiveletters.in/api';
     try {
-        const res = await fetch(`${apiBase}/blog/sitemap-data`, { cache: 'no-store' });
+        const res = await fetch(`${apiBase}/blog/sitemap-data`, { next: { revalidate: 60 } });
         if (!res.ok) return [];
         const data = await res.json();
         return (data?.data || []).map(post => ({ slug: post.slug }));
