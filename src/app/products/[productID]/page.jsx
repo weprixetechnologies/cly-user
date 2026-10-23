@@ -78,7 +78,7 @@ export default function ProductDetail({ params }) {
         }
     };
 
-    const loadUserReviews = async () => {
+    const loadUserReviews = async () => {   
         const loggedIn = !!getCookie('_at');
         setIsLoggedIn(loggedIn);
         if (loggedIn) {
@@ -674,6 +674,16 @@ export default function ProductDetail({ params }) {
                             </div>
                         </div>
                     </div>
+                    {/* Description */}
+                    {product.description && (
+                        <div className='mt-8 p-6 bg-white border border-gray-200 rounded-2xl shadow-sm'>
+                            <h3 className='text-xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
+                                <span className="w-1.5 h-6 bg-[#004aad] rounded-full inline-block"></span>
+                                Product Description
+                            </h3>
+                            <div className='text-gray-700 leading-relaxed max-w-4xl'>{product.description}</div>
+                        </div>
+                    )}
 
                     {/* Benefits row */}
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12 mb-8'>
@@ -699,16 +709,7 @@ export default function ProductDetail({ params }) {
                         />
                     </div>
 
-                    {/* Description */}
-                    {product.description && (
-                        <div className='mt-8 p-6 bg-white border border-gray-200 rounded-2xl shadow-sm'>
-                            <h3 className='text-xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
-                                <span className="w-1.5 h-6 bg-[#004aad] rounded-full inline-block"></span>
-                                Product Description
-                            </h3>
-                            <div className='text-gray-700 leading-relaxed max-w-4xl'>{product.description}</div>
-                        </div>
-                    )}
+
 
                     {/* Reviews & Ratings Module */}
                     <div id="reviews-section" className='mt-8 p-6 bg-white border border-gray-200 rounded-2xl shadow-sm scroll-mt-6'>

@@ -18,7 +18,7 @@ export default function ProductsPage() {
     const [isMobileSortOpen, setIsMobileSortOpen] = useState(false)
     const [isCategoryExpanded, setIsCategoryExpanded] = useState(true)
     const [isPriceExpanded, setIsPriceExpanded] = useState(true)
-    
+
     // Drag-to-close state
     const [dragStartY, setDragStartY] = useState(0)
     const [dragOffsetY, setDragOffsetY] = useState(0)
@@ -115,9 +115,9 @@ export default function ProductsPage() {
                 <h3 className="font-bold text-gray-900 text-lg">Filters</h3>
                 <button onClick={handleShowAll} className="text-xs text-[#004aad] font-semibold hover:underline">Clear All</button>
             </div>
-            
+
             <hr className="my-4 border-gray-100" />
-            
+
             {/* Categories */}
             <div>
                 <div onClick={() => setIsCategoryExpanded(!isCategoryExpanded)} className="flex justify-between items-center mb-4 cursor-pointer group">
@@ -129,7 +129,7 @@ export default function ProductsPage() {
                     </div>
                     <svg className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-300 ${isCategoryExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
-                
+
                 <div className={`space-y-3 overflow-hidden transition-all duration-300 ${isCategoryExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 mb-0'}`}>
                     <label className="flex items-center gap-3 cursor-pointer group">
                         <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#004aad] focus:ring-[#004aad] transition-colors" checked={categoryID === ''} onChange={() => { setCategoryID(''); handleFilterChange(); }} />
@@ -143,9 +143,9 @@ export default function ProductsPage() {
                     ))}
                 </div>
             </div>
-            
+
             <hr className="my-5 border-gray-100" />
-            
+
             {/* Price Range */}
             <div>
                 <div onClick={() => setIsPriceExpanded(!isPriceExpanded)} className="flex justify-between items-center mb-4 cursor-pointer group">
@@ -157,7 +157,7 @@ export default function ProductsPage() {
                     </div>
                     <svg className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-300 ${isPriceExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
-                
+
                 <div className={`overflow-hidden transition-all duration-300 ${isPriceExpanded ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 mb-0'}`}>
                     <div className="flex items-center gap-2 mb-4">
                         <div className="relative flex-1">
@@ -170,13 +170,13 @@ export default function ProductsPage() {
                             <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max" className="w-full pl-6 pr-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#004aad] focus:border-[#004aad] outline-none transition-shadow" />
                         </div>
                     </div>
-                    
+
                     <button onClick={() => { handleFilterChange(); setIsMobileFilterOpen(false); }} className="w-full bg-[#004aad] text-white rounded-lg py-2 text-sm font-semibold hover:bg-[#003882] transition-colors shadow-sm">
                         Apply
                     </button>
                 </div>
             </div>
-            
+
 
         </div>
     )
@@ -193,8 +193,8 @@ export default function ProductsPage() {
                     <div className="w-[72px] h-[72px] shrink-0 bg-pink-50/60 rounded-[18px] flex items-center justify-center relative shadow-sm border border-pink-100/40">
                         <span className="text-[32px] drop-shadow-sm relative z-10">🛍️</span>
                         <span className="absolute top-2 left-2 text-[#F97316] text-[10px] opacity-80 animate-pulse">✨</span>
-                        <span className="absolute bottom-2.5 right-1.5 text-[#F97316] text-[8px] opacity-80 animate-pulse" style={{animationDelay: '150ms'}}>✨</span>
-                        <span className="absolute top-2.5 right-1.5 text-[#F97316] text-[7px] opacity-80 animate-pulse" style={{animationDelay: '300ms'}}>✨</span>
+                        <span className="absolute bottom-2.5 right-1.5 text-[#F97316] text-[8px] opacity-80 animate-pulse" style={{ animationDelay: '150ms' }}>✨</span>
+                        <span className="absolute top-2.5 right-1.5 text-[#F97316] text-[7px] opacity-80 animate-pulse" style={{ animationDelay: '300ms' }}>✨</span>
                     </div>
                 </div>
             </div>
@@ -203,7 +203,7 @@ export default function ProductsPage() {
             <div className="hidden md:block relative overflow-hidden bg-white border-b border-gray-200 shadow-sm">
                 {/* Yellow Blob Background */}
                 <div className="absolute top-0 left-[-5%] w-[40%] h-[150%] bg-[#FFC107] rounded-br-[150px] z-0 hidden md:block rotate-[-5deg]"></div>
-                
+
                 <div className="relative z-10 max-w-full md:max-w-[95%] mx-auto px-2 md:px-8 py-6 md:py-8">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-12 items-start md:items-center">
                         <div className="flex-shrink-0 md:w-1/4 pt-2 md:pl-4">
@@ -211,7 +211,7 @@ export default function ProductsPage() {
                             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Shop</h1>
                             <p className="text-gray-800 text-sm max-w-[280px] font-medium leading-relaxed">Explore our wide range of quality products at wholesale prices.</p>
                         </div>
-                        
+
                         <div className="flex-grow flex flex-col md:flex-row gap-4 w-full items-center justify-between mt-4 md:mt-0">
                             {/* Feature Cards */}
                             <div className="flex flex-col sm:flex-row gap-4 flex-grow justify-end md:justify-center">
@@ -280,11 +280,11 @@ export default function ProductsPage() {
                             </div>
 
 
-                            
+
                             <div className="text-sm text-gray-600 hidden md:block font-medium">
                                 Showing <span className="font-bold text-gray-900">Products</span>
                             </div>
-                            
+
                             {/* Sort Options (Hidden on Mobile, shown in Bottom Sheet instead) */}
                             <div className="hidden sm:flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                                 <div className="flex items-center gap-2">
@@ -339,14 +339,14 @@ export default function ProductsPage() {
 
             {/* Mobile Fixed Bottom Actions */}
             <div className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-40 flex shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pb-safe">
-                <button 
+                <button
                     onClick={() => setIsMobileSortOpen(true)}
                     className="flex-1 py-3.5 flex items-center justify-center gap-2 text-gray-700 font-semibold border-r border-gray-200"
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
                     Sort
                 </button>
-                <button 
+                <button
                     onClick={() => setIsMobileFilterOpen(true)}
                     className="flex-1 py-3.5 flex items-center justify-center gap-2 text-gray-700 font-semibold"
                 >
@@ -359,11 +359,11 @@ export default function ProductsPage() {
             {isMobileSortOpen && (
                 <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileSortOpen(false)}></div>
-                    <div 
+                    <div
                         className="relative bg-white rounded-t-2xl px-5 pb-safe pt-2 w-full animate-[slide-up_0.3s_ease-out] shadow-2xl"
                         style={{ transform: draggingSheet === 'sort' ? `translateY(${dragOffsetY}px)` : 'translateY(0)', transition: draggingSheet === 'sort' ? 'none' : 'transform 0.3s' }}
                     >
-                        <div 
+                        <div
                             className="w-full flex justify-center py-3 cursor-grab active:cursor-grabbing"
                             onTouchStart={(e) => handleTouchStart(e, 'sort')}
                             onTouchMove={handleTouchMove}
@@ -384,16 +384,16 @@ export default function ProductsPage() {
                     </div>
                 </div>
             )}
-            
+
             {/* Mobile Filter Bottom Sheet */}
             {isMobileFilterOpen && (
                 <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileFilterOpen(false)}></div>
-                    <div 
+                    <div
                         className="relative bg-white rounded-t-2xl h-[85vh] flex flex-col animate-[slide-up_0.3s_ease-out] shadow-2xl w-full"
                         style={{ transform: draggingSheet === 'filter' ? `translateY(${dragOffsetY}px)` : 'translateY(0)', transition: draggingSheet === 'filter' ? 'none' : 'transform 0.3s' }}
                     >
-                        <div 
+                        <div
                             className="w-full flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing shrink-0"
                             onTouchStart={(e) => handleTouchStart(e, 'filter')}
                             onTouchMove={handleTouchMove}
@@ -405,11 +405,11 @@ export default function ProductsPage() {
                             <h3 className="font-bold text-lg text-gray-900">Filters</h3>
                             <button onClick={() => setIsMobileFilterOpen(false)} className="p-1 bg-gray-100 rounded-full text-gray-500"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto bg-gray-50/50">
                             <FilterContent />
                         </div>
-                        
+
                         <div className="p-4 border-t border-gray-200 flex gap-4 bg-white pb-safe">
                             <button onClick={() => { handleShowAll(); setIsMobileFilterOpen(false); }} className="flex-1 py-3.5 rounded-xl border border-gray-300 font-bold text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100">Clear All</button>
                             <button onClick={() => setIsMobileFilterOpen(false)} className="flex-1 py-3.5 rounded-xl bg-[#004aad] text-white font-bold hover:bg-[#003882] shadow-sm">Show Results</button>
