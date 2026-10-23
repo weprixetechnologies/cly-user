@@ -17,7 +17,6 @@ export default async function sitemap() {
     ];
 
     // 2. Fetch categories
-    // The categories table uses categoryID as the URL identifier (no slug column in DB)
     let categoryRoutes = [];
     try {
         const res = await fetch(`${apiBase}/categories`, { next: { revalidate: 3600 } });
@@ -25,9 +24,9 @@ export default async function sitemap() {
             const data = await res.json();
             const categories = data?.categories || [];
             categoryRoutes = categories
-                .filter(cat => cat.categoryID) // skip any entry without a valid ID
+                .filter(cat => cat.slug || cat.categoryID) // skip any entry without a valid slug or ID
                 .map(cat => ({
-                    url: `${siteUrl}/categories/${cat.categoryID}`,
+                    url: `${siteUrl}/categories/${cat.slug || cat.categoryID}`,
                     lastModified: new Date(),
                     changeFrequency: 'weekly',
                     priority: 0.8

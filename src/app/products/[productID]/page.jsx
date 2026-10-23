@@ -434,7 +434,7 @@ export default function ProductDetail({ params }) {
                             <li><a href="/" className="hover:text-[#004aad]">Home</a></li>
                             <li><span className="mx-2 text-gray-400">›</span></li>
                             <li>
-                                <a href={product.categoryID ? `/categories/${product.categoryID}` : "/products"} className="hover:text-[#004aad]">
+                                <a href={(product.categorySlug || product.categoryID) ? `/categories/${product.categorySlug || product.categoryID}` : "/products"} className="hover:text-[#004aad]">
                                     {(Array.isArray(product.categories) ? product.categories : [product.categoryName]).filter(Boolean)[0] || 'Category'}
                                 </a>
                             </li>

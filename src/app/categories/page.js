@@ -193,7 +193,7 @@ export default function CategoriesPage() {
                             const blobColor = blobColors[index % blobColors.length];
                             
                             return (
-                                <Link key={category.categoryID || index} href={`/categories/${category.categoryID}`}>
+                                <Link key={category.categoryID || index} href={`/categories/${category.slug || category.categoryID}`}>
                                     <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 transition-all duration-300 p-3 md:p-6 flex flex-col items-center relative group h-full">
                                         
                                         {/* Product Count Pill */}

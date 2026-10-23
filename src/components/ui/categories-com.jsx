@@ -7,7 +7,7 @@ const CategoriesCom = ({ categories = [] }) => {
         <div className="flex flex-wrap gap-10 px-10 justify-center mt-[30px]">
             {categories.slice(0, 8).map((category, index) => (
                 <div className='flex flex-col items-center justify-center gap-2 group' key={index}>
-                    <Link href={`/categories/${category.categoryID}`} className='flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-300'>
+                    <Link href={`/categories/${category.slug || category.categoryID}`} className='flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform duration-300'>
                         <div className="relative overflow-hidden rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300">
                             <Image
                                 src={

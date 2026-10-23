@@ -18,7 +18,7 @@ export default function CategoryProducts({ params }) {
 function CategoryProductsContent({ params }) {
     // Unwrap params if it's a Promise (Next.js newer behavior), fallback to direct access for compatibility
     const resolvedParams = typeof params?.then === 'function' ? React.use(params) : params;
-    const { categoryID } = resolvedParams || {};
+    const categoryIdentifier = resolvedParams?.slug || resolvedParams?.categoryID;
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
@@ -41,22 +41,31 @@ function CategoryProductsContent({ params }) {
     }, [searchParams]);
 
     useEffect(() => {
-        fetchCategoryAndProducts();
-    }, [categoryID, currentPage]);
+        if (categoryIdentifier) {
+            fetchCategoryAndProducts();
+        }
+    }, [categoryIdentifier, currentPage]);
 
     const fetchCategoryAndProducts = async () => {
         try {
             setLoading(true);
             setError('');
 
-            // Fetch category details and products in parallel
+            // Fetch category details and products in parallel (backend accepts slug or ID)
             const [categoryRes, productsRes] = await Promise.all([
-                api.get(`/categories/${categoryID}`),
-                api.get(`/products/by-category/${categoryID}?page=${currentPage}&limit=24`)
+                api.get(`/categories/${categoryIdentifier}`),
+                api.get(`/products/by-category/${categoryIdentifier}?page=${currentPage}&limit=24`)
             ]);
 
-            setCategory(categoryRes.data.category);
+            const fetchedCategory = categoryRes.data.category;
+            setCategory(fetchedCategory);
             setData(productsRes.data.data);
+
+            // If user arrived via categoryID and category has a slug, canonicalize URL to the slug
+            if (fetchedCategory?.slug && categoryIdentifier !== fetchedCategory.slug) {
+                const queryStr = currentPage > 1 ? `?page=${currentPage}` : '';
+                router.replace(`/categories/${fetchedCategory.slug}${queryStr}`, { scroll: false });
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
             setError('Failed to load products');
